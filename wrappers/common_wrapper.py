@@ -41,8 +41,8 @@ class CommonWrapper(WrapperInterface):
         return self == self.get_root().get_node(self.get_path())
 
     @classmethod
-    def wrap(cls, obj: Any):
-        return CommonWrapper(obj)
+    def wrap(cls, obj: Any, path: Optional[list] = None):
+        return CommonWrapper(obj, path=path)
 
     @classmethod
     def set_default_viewer(cls, viewer: ViewerInterface):
@@ -117,26 +117,64 @@ class CommonWrapper(WrapperInterface):
             props['data'] = obj
         return props
 
-    def get_serializable_props(self) -> dict:
+    def get_serializable_props(self, depth: Optional[int] = None, use_ids: bool = False, skip_empty: bool = False):
         serializable_props = OrderedDict()
         obj = self.get_raw_object()
         if isinstance(obj, PRIMITIVES):
             serializable_props = obj
         elif isinstance(obj, ARRAY_TYPES):
-            serializable_props['class'] = self.get_class()
-            serializable_props['items'] = list()
-            for i in obj:
-                if not isinstance(i, CommonWrapper):
-                    i = CommonWrapper.wrap(i)
-                i_serializable = i.get_serializable_props()
-                serializable_props['items'].append(i_serializable)
+            serializable_props = list()
+            for n, i in enumerate(obj):
+                i_id = self._get_id(i) if use_ids else None
+                if i_id is not None:
+                    i_serializable = i_id
+                else:
+                    if not isinstance(i, CommonWrapper):
+                        i = CommonWrapper.wrap(i, path=self.get_path() + [n])
+                    if depth == 0:
+                        i_serializable = str(i)
+                    else:
+                        i_depth = depth - 1 if depth is not None else None
+                        i_serializable = i.get_serializable_props(depth=i_depth, use_ids=use_ids, skip_empty=skip_empty)
+                serializable_props.append(i_serializable)
+            serializable_props = obj.__class__(serializable_props)
+        elif isinstance(obj, type):
+            serializable_props = repr(type)
+        elif depth == 0:
+            serializable_props = str(obj)
         else:
             props = self.get_props(including_protected=False, add=['class'])
             for k, v in props.items():
-                if not isinstance(v, CommonWrapper):
-                    v = CommonWrapper.wrap(v)
-                serializable_props[k] = v.get_serializable_props()
+                skip_v = False
+                v_id = self._get_id(v) if use_ids else None
+                if v_id is not None:
+                    v_serializable = v_id
+                else:
+                    if skip_empty:
+                        if v is None:
+                            skip_v = True
+                        elif hasattr(v, '__len__'):
+                            if len(v) == 0:
+                                skip_v = True
+                    if skip_v:
+                        v_serializable = None
+                    else:
+                        if not isinstance(v, CommonWrapper):
+                            v = CommonWrapper.wrap(v, path=self.get_path() + [k])
+                        v_depth = depth - 1 if depth is not None else None
+                        v_serializable = v.get_serializable_props(depth=v_depth, use_ids=use_ids, skip_empty=skip_empty)
+                if not skip_v:
+                    serializable_props[k] = v_serializable
         return serializable_props
+
+    @staticmethod
+    def _get_id(obj):
+        if hasattr(obj, 'id'):
+            return obj.id
+        elif hasattr(obj, 'get_id'):
+            return obj.get_id()
+        elif hasattr(obj, 'short_name'):
+            return obj.short_name
 
     def get_methods(self, including_protected: bool = False) -> dict:
         obj = self.get_raw_object()
