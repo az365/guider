@@ -28,6 +28,13 @@ class CommonWrapper(WrapperInterface):
 
     obj = property(get_raw_object, set_raw_object)
 
+    @staticmethod
+    def _get_raw_object(obj):
+        if isinstance(obj, CommonWrapper):
+            return obj.get_raw_object()
+        else:
+            return obj
+
     def get_root(self) -> WrapperInterface:
         if self._root:
             return self._root
@@ -268,8 +275,8 @@ class CommonWrapper(WrapperInterface):
                 if name in props:
                     return props[name]
                 else:
-                    raise ValueError(f'{name} not found (available: {props.keys()})')
-
+                    available_keys_str = ', '.join(map(str, props.keys()))
+                    raise ValueError(f'{name} not found (available: {available_keys_str})')
 
     def get_wrapped_property(self, name: str):
         prop = self.get_raw_property(name)
@@ -325,6 +332,11 @@ class CommonWrapper(WrapperInterface):
         cls = self.__class__.__name__
         props = repr(self.get_raw_object())
         return f'{cls}({props})'
+
+    def __eq__(self, other):
+        raw_self = self.get_raw_object()
+        raw_other = self._get_raw_object(other)
+        return raw_self == raw_other
 
     def get_view(self, viewer: Optional[ViewerInterface] = None):
         if not viewer:
