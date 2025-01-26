@@ -1,66 +1,17 @@
-from enum import Enum
-from typing import Optional, Iterable, Union, Iterator
+from typing import Optional, Iterable, Iterator
 from collections import OrderedDict
 
-from templates.entity import Entity
-
-Term = Entity
-Terms = Union[Term, list, None]
-
-class SimpleTerm(Term):
-    def __init__(
-            self,
-            short_name: str,
-            synonymes: list,
-            definition: str='',
-
-            parent: Terms = None,
-            child: Terms = None,
-
-            uses: Terms = None,
-            usage: Terms = None,
-    ):
-        super().__init__(short_name, synonymes=synonymes, definition=definition)
-
-        self.parent = parent
-        self.child = child
-
-        self.uses = uses
-        self.usage = usage
-
-
-class LinkType(Enum):
-    Parent = 'parent'
-    Child = 'child'
-    Class = 'class'
-    Instance = 'instance'
-    Container = 'container'
-    Content = 'content'
-    Uses = 'uses'
-    Usage = 'usage'
-
-
-link_type_symmetry = (
-    (LinkType.Parent, LinkType.Child),
-    (LinkType.Class, LinkType.Instance),
-    (LinkType.Container, LinkType.Content),
-    (LinkType.Uses, LinkType.Usage),
-)
-
-def get_inverted_link_type(link_type: LinkType, skip_missing: bool = False) -> Optional[LinkType]:
-    for a, b in link_type_symmetry:
-        if a == link_type:
-            return b
-        if b == link_type:
-            return a
-    if not skip_missing:
-        raise ValueError(f'there are no inverted pair for {link_type}')
+from templates.knowledge.simple_term import Term, Terms
+from templates.knowledge.link_type import LinkType, get_inverted_link_type
 
 
 class LinkedTerm(Term):
     def __init__(
             self,
-            short_name: str, synonymes: Optional[list] = None, definition: str='',
+            short_name: str,
+            synonymes: Optional[list] = None,
+            definition: str='',
+
             parent: Terms = None, child: Terms = None,
             cls: Terms = None, instance: Terms = None,
             container: Terms = None, content: Terms = None,

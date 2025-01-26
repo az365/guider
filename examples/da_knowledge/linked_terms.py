@@ -1,4 +1,4 @@
-from templates.knowledge.term import LinkedTerm
+from templates.knowledge.linked_term import LinkedTerm
 
 
 discipline = LinkedTerm(
