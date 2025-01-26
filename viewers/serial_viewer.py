@@ -14,3 +14,11 @@ class SerialViewer(AbstractViewer):
     def get_view(self, obj):
         obj = self.get_wrapped_object(obj)
         return SerialView(obj, depth=self.depth, use_ids=self.use_ids, skip_empty=self.skip_empty)
+
+    @staticmethod
+    def get_view_class():
+        return SerialView
+
+    def parse(self, line: str, serial_format: str ='yaml', *args, **kwargs):
+        parser = getattr(self.get_view_class(), f'parse_{serial_format}')
+        return parser(line, *args, **kwargs)

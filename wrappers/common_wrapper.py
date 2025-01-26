@@ -4,6 +4,7 @@ from collections import OrderedDict
 from wrappers.wrapper_interface import WrapperInterface, Array, ARRAY_TYPES, PATH_DELIMITER
 from viewers.viewer_interface import ViewerInterface
 
+Native = WrapperInterface
 Class = Union[Type, Callable]
 
 DEFAULT_PROPS = 'class', 'path'
@@ -35,7 +36,7 @@ class CommonWrapper(WrapperInterface):
         else:
             return obj
 
-    def get_root(self) -> WrapperInterface:
+    def get_root(self) -> Native:
         if self._root:
             return self._root
         else:
@@ -68,8 +69,13 @@ class CommonWrapper(WrapperInterface):
             return self.get_short_name()
 
     @classmethod
-    def wrap(cls, obj: Any, path: Optional[list] = None):
+    def wrap(cls, obj: Any, path: Optional[list] = None) -> Native:
         return CommonWrapper(obj, path=path)
+
+    @classmethod
+    def from_props(cls, props: dict, target_class: Class = dict, path: Optional[list] = None) -> Native:
+        obj = target_class(**props)
+        return cls.wrap(obj, path=path)
 
     @classmethod
     def set_default_viewer(cls, viewer: ViewerInterface):

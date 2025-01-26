@@ -3,7 +3,7 @@ import json
 import yaml
 
 from views.abstract_view import AbstractView
-from wrappers.common_wrapper import CommonWrapper
+from wrappers.common_wrapper import CommonWrapper, Class
 
 
 class IndentDumper(yaml.SafeDumper):
@@ -36,4 +36,11 @@ class SerialView(AbstractView):
 
     def get_yaml(self) -> str:
         data = self.get_serializable_props(ordered=False)
-        return yaml.dump(data, Dumper=IndentDumper, allow_unicode=True)
+        return yaml.dump(data, Dumper=IndentDumper, allow_unicode=True, sort_keys=False)
+
+    @staticmethod
+    def parse_yaml(line, target_class: Class = dict, path: Optional[str] = None) -> CommonWrapper:
+        props = yaml.safe_load(line)
+        wrapped = CommonWrapper.from_props(props=props, target_class=target_class, path=path)
+        assert isinstance(wrapped, CommonWrapper)
+        return wrapped
