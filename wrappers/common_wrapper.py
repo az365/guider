@@ -1,6 +1,7 @@
 from typing import Optional, Iterable, Callable, Union, Type, Any
 from collections import OrderedDict
 
+from wrappers.functions import is_empty, get_id
 from wrappers.wrapper_interface import WrapperInterface, Array, ARRAY_TYPES, PATH_DELIMITER
 from viewers.viewer_interface import ViewerInterface
 
@@ -50,7 +51,7 @@ class CommonWrapper(WrapperInterface):
 
     def get_short_name(self) -> str:
         obj = self.get_raw_object()
-        obj_id = self._get_id(obj)
+        obj_id = get_id(obj)
         path = self.get_path()
         if obj_id:
             return obj_id
@@ -167,14 +168,14 @@ class CommonWrapper(WrapperInterface):
         elif isinstance(obj, ARRAY_TYPES):
             serializable_props = list()
             for n, i in enumerate(obj):
-                i_id = self._get_id(i) if use_ids else None
+                i_id = get_id(i) if use_ids else None
                 if i_id is not None:
                     i_serializable = i_id
                 else:
                     if not isinstance(i, CommonWrapper):
                         i = CommonWrapper.wrap(i, path=self.get_path() + [n])
                     if depth == 0:
-                        i_id = self._get_id(i)
+                        i_id = get_id(i)
                         if i_id is not None:
                             i_serializable = i_id
                         else:
@@ -202,16 +203,12 @@ class CommonWrapper(WrapperInterface):
                 items = props.items()
             for k, v in items:
                 skip_v = False
-                v_id = self._get_id(v) if use_ids else None
+                v_id = get_id(v) if use_ids else None
                 if v_id is not None:
                     v_serializable = v_id
                 else:
                     if skip_empty:
-                        if v is None:
-                            skip_v = True
-                        elif hasattr(v, '__len__'):
-                            if len(v) == 0:
-                                skip_v = True
+                        skip_v = is_empty(v)
                     if skip_v:
                         v_serializable = None
                     else:
@@ -227,17 +224,6 @@ class CommonWrapper(WrapperInterface):
                 if not skip_v:
                     serializable_props[k] = v_serializable
         return serializable_props
-
-    @staticmethod
-    def _get_id(obj):
-        if hasattr(obj, 'id'):
-            return obj.id
-        elif hasattr(obj, 'get_id'):
-            return obj.get_id()
-        elif hasattr(obj, 'short_name'):
-            return obj.short_name
-        elif hasattr(obj, 'get_short_name'):
-            return obj.get_name_or_str()
 
     def get_methods(self, including_protected: bool = False) -> dict:
         obj = self.get_raw_object()
