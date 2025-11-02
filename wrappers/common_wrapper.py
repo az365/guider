@@ -243,7 +243,7 @@ class CommonWrapper(WrapperInterface):
         attributes = dict()
         obj = self.get_raw_object()
         for key in self.get_attribute_names(including_protected):
-            value = obj.__getattr__(key)
+            value = getattr(obj, key)
             attributes[key] = value
         return attributes
 

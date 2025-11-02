@@ -1,5 +1,10 @@
 from typing import Iterable
 
+try:  # Assume IPython installed
+    from IPython.core.display import display, clear_output, Markdown, HTML
+except ImportError:  # Using simple text output
+    display, clear_output, Markdown, HTML = print, None, None, None
+
 
 def is_empty(obj) -> bool:
     if obj is None:
@@ -38,7 +43,7 @@ def get_id(obj):
         return obj.get_name_or_str()
 
 
-def get_array_str(obj: Iterable, scope: bool = False, quote: str = '') -> str:
+def get_array_str(obj: Iterable, scope: bool = False, quote: str = '', delimiter: str = ', ') -> str:
     array = list()
     for i in obj:
         i_repr = get_id(i)
@@ -49,8 +54,18 @@ def get_array_str(obj: Iterable, scope: bool = False, quote: str = '') -> str:
         else:
             i_repr = i_repr.replace(',', '\,')
         array.append(i_repr)
-    array_str = ', '.join(array)
+    array_str = delimiter.join(array)
     if scope:
         return f'[{array_str}]'
     else:
         return array_str
+
+def get_attr_str(obj: dict, quote: str = '', delimiter: str = ', ') -> str:
+    array = list()
+    for k, v in obj.items():
+        if quote:
+            v.replace(quote, '\\' + quote)
+            v = f'{quote}{v}{quote}'
+        item = f'{k}={v}'
+        array.append(item)
+    return get_array_str(array, scope=False, quote='', delimiter=delimiter)

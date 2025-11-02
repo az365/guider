@@ -16,3 +16,15 @@ class AbstractView:
 
     def __str__(self):
         return str(self._data)
+
+    def __iter__(self):
+        yield from self.get_data()
+
+    def __len__(self):
+        return len(self.get_data())
+
+    def __bool__(self):
+        return bool(self.get_data())
+
+    def __add__(self, other):
+        return self.__class__([self, other])
