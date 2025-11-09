@@ -4,8 +4,12 @@ from typing import Optional, Union
 
 from util.functions import get_attr_str
 
+HTML_ATTR_MAPPING = dict(id='name', title='hint', href='url')
+
 
 class TagType(Enum):
+    Div = 'div'
+    Span = 'span'
     Paragraph = 'p'
     Header = 'h'
     HyperLink = 'a'
@@ -14,7 +18,11 @@ class TagType(Enum):
     Font = 'font'
 
     def get_class(self):
-        if self.name == self.Paragraph.name:
+        if self.name == self.Div.name:
+            return Div
+        elif self.name == self.Span.name:
+            return Span
+        elif self.name == self.Paragraph.name:
             return Paragraph
         elif self.name == self.Header.name:
             return Header
@@ -42,9 +50,18 @@ class TagType(Enum):
 
 
 class AbstractFormattingTag(ABC):
+    def __init__(self, name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None):
+        self.name = name
+        self.hint = hint
+        self.style = style
+
     @abstractmethod
     def get_tag_type(self) -> TagType:
         pass
+
+    @classmethod
+    def _get_html_excluded_attributes(cls) -> list:
+        return list()
 
     def get_tag_name(self) -> str:
         return self.get_tag_type().value
@@ -61,18 +78,24 @@ class AbstractFormattingTag(ABC):
         tag_name = self.get_tag_name()
         return f'</{tag_name}>'
 
-    def get_attributes(self, filled_only: bool = True) -> dict:
-        if filled_only:
-            attributes = dict()
-            for k, v in vars(self).items():
-                if v:
-                    attributes[k] = v
-            return attributes
-        else:
-            return vars(self)
+    def get_attributes(self, filled_only: bool = True, exclude: Optional[list] = None) -> dict:
+        attributes = dict()
+        for k, v in vars(self).items():
+            take = True
+            if filled_only:
+                take = take and v is not None
+            if exclude:
+                take = take and k not in exclude
+            if take:
+                attributes[k] = v
+        return attributes
 
     def get_html_attributes_str(self) -> str:
-        attributes = self.get_attributes()
+        excluding = self._get_html_excluded_attributes()
+        attributes = self.get_attributes(filled_only=True, exclude=excluding)
+        for html_name, default_name in HTML_ATTR_MAPPING.items():
+            if default_name in attributes:
+                attributes[html_name] = attributes.pop(default_name)
         return get_attr_str(attributes, delimiter=' ', quote='"')
 
     @abstractmethod
@@ -90,9 +113,9 @@ class AbstractFormattingTag(ABC):
         return ''
 
 
-class Paragraph(AbstractFormattingTag):
+class Div(AbstractFormattingTag):
     def get_tag_type(self) -> TagType:
-        return TagType.Paragraph
+        return TagType.Div
 
     def get_md_open_tag(self) -> str:
         return '\n'
@@ -104,10 +127,24 @@ class Paragraph(AbstractFormattingTag):
         return '\n'
 
 
+class Span(Div):
+    def get_tag_type(self) -> TagType:
+        return TagType.Span
+
+
+class Paragraph(Span):
+    def get_tag_type(self) -> TagType:
+        return TagType.Paragraph
+
+
 class Header(Paragraph):
-    def __init__(self, level: int, name: Optional[str] = None):
+    def __init__(
+            self,
+            level: int,
+            name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None,
+    ):
+        super().__init__(name=name, hint=hint, style=style)
         self.level = level
-        self.name = name
 
     def get_tag_type(self) -> TagType:
         return TagType.Header
@@ -122,44 +159,52 @@ class Header(Paragraph):
         if self.name:
             return ' {#' + self.name + '}'
 
-    def get_attributes(self, filled_only: bool = True) -> dict:
-        attributes = dict()
-        if self.name or not filled_only:
-            attributes['name'] = self.name
-        return attributes
+    @classmethod
+    def _get_html_excluded_attributes(cls) -> list:
+        excluded = super()._get_html_excluded_attributes()
+        excluded.append('level')
+        return excluded
 
     def get_text_close_tag(self) -> str:
         return '\n====\n'
 
 
 class HyperLink(AbstractFormattingTag):
-    def __init__(self, href: str, name: str, title: str):
-        self.href = href
-        self.name = name
-        self.title = title
+    def __init__(
+            self,
+            url: str,
+            name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None,
+    ):
+        super().__init__(name=name, hint=hint, style=style)
+        self.url = url
 
     def get_tag_type(self) -> TagType:
         return TagType.HyperLink
 
     def get_md_open_tag(self) -> str:
-        if self.href:
+        if self.url:
             return '['
         elif self.name:
             return f'[](#{self.name})\n'
 
     def get_md_close_tag(self) -> str:
-        if self.href:
-            if self.title:
-                return f']({self.href} {self.title})'
+        if self.url:
+            if self.hint:
+                return f']({self.url} {self.hint})'
             else:
-                return f']({self.href})'
+                return f']({self.url})'
 
     def get_text_close_tag(self) -> str:
         return '[*]'
 
 
 class List(AbstractFormattingTag):
-    def __init__(self, ordered: bool = False):
+    def __init__(
+            self,
+            ordered: bool = False,
+            name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None,
+    ):
+        super().__init__(name=name, hint=hint, style=style)
         self.ordered = ordered
 
     def get_tag_type(self) -> TagType:
@@ -171,8 +216,11 @@ class List(AbstractFormattingTag):
         else:
             return 'ul'
 
-    def get_attributes(self, filled_only: bool = True) -> dict:
-        return dict()
+    @classmethod
+    def _get_html_excluded_attributes(cls) -> list:
+        excluded = super()._get_html_excluded_attributes()
+        excluded.append('ordered')
+        return excluded
 
     def get_md_open_tag(self) -> str:
         return '\n'
@@ -188,14 +236,22 @@ class List(AbstractFormattingTag):
 
 
 class ListItem(AbstractFormattingTag):
-    def __init__(self, ordered: bool = False):
+    def __init__(
+            self,
+            ordered: bool = False,
+            name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None,
+    ):
+        super().__init__(name=name, hint=hint, style=style)
         self.ordered = ordered
 
     def get_tag_type(self) -> TagType:
         return TagType.ListItem  # li
 
-    def get_attributes(self, filled_only: bool = True) -> dict:
-        return dict()
+    @classmethod
+    def _get_html_excluded_attributes(cls) -> list:
+        excluded = super()._get_html_excluded_attributes()
+        excluded.append('ordered')
+        return excluded
 
     def get_md_open_tag(self) -> str:
         if self.ordered:
@@ -217,6 +273,7 @@ class Font(AbstractFormattingTag):
             color: Optional[str] = None,
             bold: Optional[bool] = None,
             italic: Optional[bool] = None,
+            name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None,
     ):
         self.size = size
         self.color = color
@@ -239,12 +296,12 @@ class Font(AbstractFormattingTag):
 
     def get_html_close_tag(self) -> str:
         tag = ''
-        if self._need_font_tag():
-            tag += f'</font>'
-        if self.bold:
-            tag += '</b>'
         if self.italic:
             tag += '</i>'
+        if self.bold:
+            tag += '</b>'
+        if self._need_font_tag():
+            tag += f'</font>'
         return tag
 
     def get_md_open_tag(self) -> str:
@@ -269,13 +326,11 @@ class Font(AbstractFormattingTag):
     def get_text_close_tag(self) -> str:
         return ''
 
-    def get_attributes(self, filled_only: bool = True) -> dict:
-        attributes = dict()
-        if self.size or not filled_only:
-            attributes['size'] = self.size
-        if self.color or not filled_only:
-            attributes['color'] = self.color
-        return attributes
+    @classmethod
+    def _get_html_excluded_attributes(cls) -> list:
+        excluded = super()._get_html_excluded_attributes()
+        excluded += ['bold', 'italic']
+        return excluded
 
     def _need_font_tag(self) -> bool:
         if self.get_html_attributes_str():
