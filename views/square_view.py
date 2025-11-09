@@ -90,9 +90,10 @@ class Style:
             background: Optional[str] = None,
             # background_color: Optional[str] = None,
             border: Optional[str] = None,
+            border_radius: Optional[str] = None,
             margin: Optional[str] = None,
             padding: Optional[str] = None,
-
+            spacing: Optional[str] = None,
     ):
         self.display = display  # размещение элемента: inline, block, inline-block (none, inherit, initial)
         self.overflow_x = overflow_x  # поведение при переполнении: visible, hidden, scroll, auto
@@ -104,8 +105,10 @@ class Style:
         self.background = background  # фон: image, size, repeat, height
         # self.background_color = background_color
         self.border = border  # граница: width, color, radius
+        self.border_radius = border_radius  # граница: width, color, radius
         self.margin = margin  # отступ снаружи
         self.padding = padding  # отступ внутри
+        self.spacing = spacing  # отступ снаружи
 
     def get_html_style_str(self) -> str:
         style_dict = self._get_html_style_dict()
@@ -114,15 +117,23 @@ class Style:
 
     def _get_html_style_dict(self) -> OrderedDict:
         style = OrderedDict()
-        # style['color'] = self.color
-        # style['background_color'] = self.background_color
-        # style['border'] = self.border
-        # style['margin'] = self.border
-        # style['padding'] = self.border
-        for k, v in vars(self).items():
+        for k, v in self._get_init_kwargs().items():
             if v is not None:
                 style[k.replace('_', '-')] = v
         return style
+
+    def _get_init_kwargs(self) -> dict:  # get_props() ?
+        return vars(self).copy()
+
+    def __add__(self, other):
+        props = self._get_init_kwargs()
+        if other is None:
+            pass
+        elif isinstance(other, Style):
+            props.update(other._get_init_kwargs())
+        else:
+            raise TypeError(other)
+        return Style(**props)
 
     def __repr__(self):
         cls = self.__class__.__name__
@@ -147,7 +158,11 @@ class SquareView(FormattedView):
 
     def get_html_open_tag(self) -> str:
         style = self.get_html_style_str()
-        return f'<div style="{style}">'
+        title = self.get_html_title()
+        if title:
+            return f'<div style="{style}" title="{title}">'
+        else:
+            return f'<div style="{style}">'
 
     def get_html_close_tag(self) -> str:
         return '</div>'
@@ -173,6 +188,4 @@ class SquareView(FormattedView):
             style['width'] = self.get_html_width()
         if self.get_html_height():
             style['height'] = self.get_html_height()
-        if self.get_html_title():
-            style['title'] = self.get_html_title()
         return style
