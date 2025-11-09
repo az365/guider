@@ -1,6 +1,6 @@
 from typing import Iterable, Iterator, Union, Optional
 
-from wrappers.functions import is_empty
+from util.functions import is_empty
 from views.formatted_view import FormattedView
 
 Native = FormattedView

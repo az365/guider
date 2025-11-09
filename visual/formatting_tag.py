@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional, Union
 
-from wrappers.functions import get_attr_str
+from util.functions import get_attr_str
 
 
 class TagType(Enum):

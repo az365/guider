@@ -1,11 +1,7 @@
 from typing import Optional, Iterable, Union, Any
 
+from util.types import Array
 from viewers.viewer_interface import ViewerInterface
-
-Array = Union[list, tuple]
-ARRAY_TYPES = list, tuple
-
-PATH_DELIMITER = '.'
 
 
 class WrapperInterface:

@@ -1,0 +1,3 @@
+INDENT = ' ' * 2
+PATH_DELIMITER = '.'
+MAX_MD_ROW_LEN = 78

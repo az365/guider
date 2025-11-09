@@ -1,15 +1,15 @@
-from typing import Optional, Iterable, Callable, Union, Type, Any
+from typing import Optional, Iterable, Union, Any
 from collections import OrderedDict
 
-from wrappers.functions import get_id, get_array_str, remove_empty_values_from_dict
-from wrappers.wrapper_interface import WrapperInterface, Array, ARRAY_TYPES, PATH_DELIMITER
+from util.const import PATH_DELIMITER
+from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
+from util.functions import get_id, get_array_str, remove_empty_values_from_dict
+from wrappers.wrapper_interface import WrapperInterface
 from viewers.viewer_interface import ViewerInterface
 
 Native = WrapperInterface
-Class = Union[Type, Callable]
 
 DEFAULT_PROPS = 'class', 'path'
-PRIMITIVES = bool, int, float, str
 
 
 class CommonWrapper(WrapperInterface):
@@ -194,10 +194,7 @@ class CommonWrapper(WrapperInterface):
             ordered: bool = True,
     ):
         if isinstance(obj, dict):
-            if ordered:
-                serializable_props = OrderedDict()
-            else:
-                serializable_props = dict()
+            serializable_props = OrderedDict() if ordered else dict()
             items = obj.items()
             is_list = False
         elif isinstance(obj, ARRAY_TYPES + (set, )):

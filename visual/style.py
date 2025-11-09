@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import Optional
 
-from wrappers.functions import get_attr_str
+from util.functions import get_attr_str
 
 
 class Style:

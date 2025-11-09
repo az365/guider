@@ -1,6 +1,6 @@
 from enum import Enum
 
-from wrappers.functions import get_attr_str
+from util.functions import get_attr_str
 
 
 class Unit(Enum):

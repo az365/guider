@@ -3,7 +3,8 @@ import json
 import yaml
 
 from views.abstract_view import AbstractView
-from wrappers.common_wrapper import CommonWrapper, Class
+from wrappers.common_wrapper import CommonWrapper
+from util.types import Class
 
 
 class IndentDumper(yaml.SafeDumper):

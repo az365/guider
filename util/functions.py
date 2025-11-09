@@ -1,10 +1,5 @@
 from typing import Iterable
 
-try:  # Assume IPython installed
-    from IPython.core.display import display, clear_output, Markdown, HTML
-except ImportError:  # Using simple text output
-    display, clear_output, Markdown, HTML = print, None, None, None
-
 
 def is_empty(obj) -> bool:
     if obj is None:
