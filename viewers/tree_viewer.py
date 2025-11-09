@@ -2,7 +2,7 @@ from typing import Optional, Iterable
 
 from wrappers.wrapper_interface import WrapperInterface
 from views.formatted_view import FormattedView
-from views.formatting_tag import TagType, ListItem
+from visual.formatting_tag import TagType
 from viewers.text_viewer import TextViewer
 from viewers.one_line_text_viewer import OneLineTextViewer
 

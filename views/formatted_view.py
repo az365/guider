@@ -1,8 +1,8 @@
 from typing import Optional, Iterable, Union
 
-from views.text_view import TextView
-from views.formatting_tag import AbstractFormattingTag, TagType
 from wrappers.functions import HTML, display
+from visual.formatting_tag import AbstractFormattingTag, TagType
+from views.text_view import TextView
 
 Native = TextView
 Text = Union[TextView, str]
@@ -33,7 +33,7 @@ class FormattedView(TextView):
         one_line = ''.join(self._get_md_parts())
         yield from one_line.split('\n')
 
-    def get_html_lines(self):
+    def get_html_lines(self) -> Iterable[str]:
         if self.tag:
             open_tag, close_tag = self.tag.get_html_open_tag(), self.tag.get_html_close_tag()
             indent = INDENT

@@ -1,8 +1,10 @@
 from typing import Tuple, Union, Iterable, Optional
 
+from visual.formatting_tag import TagType
 from views.formatted_view import FormattedView
-from views.formatting_tag import TagType
-from views.square_view import SquareView, Style, Size, Unit
+from views.square_view import SquareView
+from visual.style import Style
+from visual.size import Unit, Size
 from viewers.tree_viewer import TreeViewer
 
 
