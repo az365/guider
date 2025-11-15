@@ -8,6 +8,14 @@ from views.formatted_view import FormattedView
 from views.square_view import SquareView
 from viewers.tree_viewer import TreeViewer
 
+MIN_SIZE_FOR_ITEMS_VIEW = Size1d('1em')
+TITLE_STYLE = Style(color='white', background='grey')
+ITEM_STYLE = Style(
+    overflow_x='hidden', overflow_y='hidden',
+    background='yellow', border='solid',
+)
+KEY_STYLE = Style(color='grey')
+
 
 class SquareViewer(TreeViewer):
     def __init__(self, size: Union[Size2d, Tuple[float, float]], style: Optional[Style] = None, max_depth: int = 5):
@@ -53,6 +61,7 @@ class SquareViewer(TreeViewer):
     def get_view(
             self,
             obj,
+            include_title: bool = True,
             size: Optional[Size2d] = None,
             style: Optional[Style] = None,
             depth: Optional[int] = None,
@@ -77,9 +86,9 @@ class SquareViewer(TreeViewer):
         elif lines_count < 4:
             view = self._get_three_lines_view(obj, size=size, style=style)
         elif size.x >= size.y:
-            view = self._get_horizontal_view(obj, size=size, style=style, depth=depth)
+            view = self._get_horizontal_view(obj, size=size, style=style, depth=depth, include_title=include_title)
         else:
-            view = self._get_vertical_view(obj, size=size, style=style, depth=depth)
+            view = self._get_vertical_view(obj, size=size, style=style, depth=depth, include_title=include_title)
         return view
 
     def _get_empty_view(self, obj, size: Size2d, style: Style) -> SquareView:
@@ -105,45 +114,82 @@ class SquareViewer(TreeViewer):
         hint = self._get_one_line(obj)
         return SquareView([cls_name, line1, line2], tag=None, size=size, style=style, hint=hint)
 
-    def _get_vertical_view(self, obj, size: Size2d, style: Style, depth: int) -> SquareView:
-        return self._get_items_view(obj, size=size, style=style, vertical=True, depth=depth)
+    def _get_vertical_view(self, obj, size: Size2d, style: Style, depth: int, include_title: bool) -> SquareView:
+        return self._get_directional_view(obj, size=size, style=style, vertical=True, depth=depth, include_title=include_title)
 
-    def _get_horizontal_view(self, obj, size: Size2d, style: Style, depth: int) -> SquareView:
-        return self._get_items_view(obj, size=size, style=style, vertical=False, depth=depth)
+    def _get_horizontal_view(self, obj, size: Size2d, style: Style, depth: int, include_title: bool) -> SquareView:
+        return self._get_directional_view(obj, size=size, style=style, vertical=False, depth=depth, include_title=include_title)
 
-    def _get_items_view(self, obj, size: Size2d, style: Style, vertical: bool, depth: int):
+    def _get_directional_view(self, obj, size: Size2d, style: Style, vertical: bool, depth: int, include_title: bool) -> SquareView:
         one_line = self._get_one_line(obj)
-        items = self._get_items_from_obj(obj)
+        if include_title:
+            title_size = Size2d(x=size.x, y='1em')
+            content_size = Size2d(x=size.x, y=size.y-title_size.y)
+            title_hint = f'title: {one_line}'
+            title_view = SquareView([one_line], tag=TagType.Paragraph, size=title_size, style=TITLE_STYLE, hint=title_hint)
+        else:
+            title_size, title_view = None, None
+            content_size = size
+        if content_size.y_size >= MIN_SIZE_FOR_ITEMS_VIEW:
+            if isinstance(obj, SquareView):
+                content_view = obj
+            elif isinstance(obj, FormattedView):
+                content_view = SquareView(obj, tag=None, size=content_size, style=None, hint=None)
+            elif isinstance(obj, str):
+                content_view = SquareView(obj, tag=TagType.Paragraph, size=content_size, style=None, hint=repr(obj))
+            else:
+                content_view = self._get_items_view(obj, content_size=content_size, vertical=vertical, depth=depth)
+        else:
+            content_view = None
+        entire_view_items = list()
+        for i in (title_view, content_view):
+            if i is not None:
+                entire_view_items.append(i)
+        hint = f'directional view: {one_line[:40]}'
+        if entire_view_items:
+            entire_view = SquareView(entire_view_items, tag=TagType.Div, size=size, style=style, hint=hint)
+        else:
+            style_for_empty = style + Style(background='silver')
+            entire_view = SquareView([], tag=TagType.Div, size=size, style=style_for_empty, hint=hint)
+        return entire_view
+
+    def _get_items_view(self, obj, content_size: Size2d, vertical: bool, depth: int):
+        items = self._get_key_value_pairs_from_obj(obj)
         count = len(items)
         if count == 0:
             squared_items = list()
         elif count == 1 and isinstance(items[0], FormattedView):
-            squared_items = items[0]
+            squared_items = [items[0]]
         else:
             spacing_1d = Size1d(3, unit=Unit.Pixel)
-            spacing_2d = Size2d(spacing_1d, spacing_1d)
+            spacing_2d = spacing_1d * spacing_1d
             display_mode = 'block' if vertical else 'inline-block'
             hor = not vertical
-            i_size = size.divide_numeric(count, horizontal=hor, vertical=vertical, rounding=True) - spacing_2d
-            i_style = style + Style(
-                display=display_mode,
-                overflow_x='hidden', overflow_y='hidden',
-                spacing=str(spacing_1d),
-                background='yellow', border='solid',
-            )
+            i_size = content_size.divide_numeric(count, horizontal=hor, vertical=vertical, rounding=True) - spacing_2d
+            i_style = ITEM_STYLE + Style(display=display_mode, spacing=str(spacing_1d))
+            key_size = Size2d(x=i_size.x, y='1em')
+            value_size = Size2d(x=i_size.x, y=i_size.y - key_size.y)
+            value_style = Style()
             squared_items = list()
-            for i in items:
-                i_squared = self.get_view(i, size=i_size, style=i_style, depth=depth - 1)
+            for k, v in items:
+                key_hint = f'key: {k}'
+                key_view = SquareView([k], tag=None, size=key_size, style=KEY_STYLE, hint=key_hint)
+                if isinstance(v, FormattedView):
+                    value_view = v
+                else:
+                    value_view = self.get_view(v, size=value_size, style=value_style, depth=depth - 1)
+                i_squared = SquareView([key_view, value_view], tag=None, size=i_size, style=i_style, hint=None)
                 squared_items.append(i_squared)
-        return SquareView(squared_items, tag=None, size=size, style=style, hint=one_line)
+        items_hint = f'items: {repr(obj)[:40]}'
+        return SquareView(squared_items, tag=TagType.Div, size=content_size, style=None, hint=items_hint)
 
-    def _get_items_from_obj(self, obj) -> list[tuple]:
+    def _get_key_value_pairs_from_obj(self, obj) -> list[tuple]:
         if isinstance(obj, str):
             items = [FormattedView([obj], TagType.Paragraph)]
         elif isinstance(obj, dict):
             items = list(obj.items())
         elif isinstance(obj, Iterable) and not isinstance(obj, str):
-            items = list(obj)
+            items = list(enumerate(obj))
         else:
             items = list(self.get_wrapped_object(obj).get_props().items())
         return items

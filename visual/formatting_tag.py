@@ -275,6 +275,7 @@ class Font(AbstractFormattingTag):
             italic: Optional[bool] = None,
             name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None,
     ):
+        super().__init__(name=name, hint=hint, style=style)
         self.size = size
         self.color = color
         self.bold = bold
