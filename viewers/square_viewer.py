@@ -113,26 +113,22 @@ class SquareViewer(TreeViewer):
 
     def _get_items_view(self, obj, size: Size2d, style: Style, vertical: bool, depth: int):
         one_line = self._get_one_line(obj)
-        spacing = Size1d(3, unit=Unit.Pixel)
         items = self._get_items_from_obj(obj)
-        if len(items) == 0:
+        count = len(items)
+        if count == 0:
             squared_items = list()
-        elif len(items) == 1 and isinstance(items[0], FormattedView):
+        elif count == 1 and isinstance(items[0], FormattedView):
             squared_items = items[0]
         else:
-            if vertical:
-                y_i = int(size.get_for_units(Unit.Pixel)._y / len(items)) - spacing
-                x_i = size.get_for_units(Unit.Pixel)._x - spacing
-                display_mode = 'block'
-            else:
-                x_i = int(size.get_for_units(Unit.Pixel)._x / len(items)) - spacing
-                y_i = size.get_for_units(Unit.Pixel)._y - spacing
-                display_mode = 'inline-block'
-            i_size = Size2d(x_i, y_i)
+            spacing_1d = Size1d(3, unit=Unit.Pixel)
+            spacing_2d = Size2d(spacing_1d, spacing_1d)
+            display_mode = 'block' if vertical else 'inline-block'
+            hor = not vertical
+            i_size = size.divide_numeric(count, horizontal=hor, vertical=vertical, rounding=True) - spacing_2d
             i_style = style + Style(
                 display=display_mode,
                 overflow_x='hidden', overflow_y='hidden',
-                spacing=spacing,
+                spacing=str(spacing_1d),
                 background='yellow', border='solid',
             )
             squared_items = list()

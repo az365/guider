@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Optional, Union
+from typing import Optional, Union, Callable
 
 from util.const import DEFAULT_FONT_SIZE, DEFAULT_FONT_PROPORTION
 from util.types import Numeric, NUMERIC
@@ -44,6 +44,28 @@ class AbstractSize(ABC):
             self.font_size = font_kwargs['font_size']
         if font_kwargs.get('font_proportion') or not skip_empty:
             self.font_proportion = font_kwargs['font_proportion']
+
+    @abstractmethod
+    def _compare(self, other, cmp: Callable):
+        pass
+
+    def __eq__(self, other):
+        return self._compare(other, cmp=lambda a, b: a == b)
+
+    def __ne__(self, other):
+        return self._compare(other, cmp=lambda a, b: a != b)
+
+    def __lt__(self, other):
+        return self._compare(other, cmp=lambda a, b: a < b)
+
+    def __le__(self, other):
+        return self._compare(other, cmp=lambda a, b: a <= b)
+
+    def __gt__(self, other):
+        return self._compare(other, cmp=lambda a, b: a > b)
+
+    def __ge__(self, other):
+        return self._compare(other, cmp=lambda a, b: a >= b)
 
 SizeOrNumeric = Union[AbstractSize, Numeric, str, None]
 
@@ -117,6 +139,66 @@ class Size1d(AbstractSize):
         if self.numeric is not None:
             x = self.get_for_units(Unit.Char).numeric
             return round(x, round_factor)
+
+    def _compare(self, other: AbstractSize, cmp: Callable):
+        assert isinstance(other, Size1d), TypeError(other)
+        if self.unit == other.unit:
+            a = self.numeric
+            b = other.numeric
+        else:
+            a = self.get_for_units(DEFAULT_UNIT)
+            b = other.get_for_units(DEFAULT_UNIT)
+        return cmp(a, b)
+
+    def __add__(self, other: SizeOrNumeric):
+        if isinstance(other, Size1d):
+            other_unit = other.unit
+            other_numeric = other.numeric
+        elif isinstance(other, NUMERIC) or other is None:
+            other_unit = None
+            other_numeric = other
+        elif isinstance(other, str):
+            other_numeric, other_unit = Unit.parse(other)
+        else:
+            raise TypeError(other)
+        if self.numeric is None or other_numeric is None:
+            sum_numeric = None
+        elif other_unit is None or other_unit == self.unit:
+            sum_numeric = self.numeric + other_numeric
+        else:
+            other_numeric = Unit.translate(other_numeric, src=other_unit, dst=self.unit, **self._get_font_kwargs())
+            sum_numeric = self.numeric + other_numeric
+        sum_size = Size1d(sum_numeric, unit=self.unit or other_unit, **self._get_font_kwargs())
+        return sum_size
+
+    def __sub__(self, other):
+        return self.__add__(-other)
+
+    def __neg__(self):
+        if self.numeric is None:
+            neg_numeric = None
+        else:
+            neg_numeric = -self.numeric
+        return Size1d(neg_numeric, unit=self.unit, **self._get_font_kwargs())
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            x = self.numeric * other
+            return Size1d(x, unit=self.unit, **self._get_font_kwargs())
+        elif isinstance(other, Size1d):
+            return Size2d(self.size, other.size, **self._get_font_kwargs())
+        else:
+            raise TypeError(repr(other))
+
+    def __truediv__(self, other):
+        assert isinstance(other, (int, float)), TypeError(repr(other))
+        x = self.numeric / other
+        return Size1d(x, unit=self.unit, **self._get_font_kwargs())
+
+    def __floordiv__(self, other):
+        assert isinstance(other, (int, float)), TypeError(repr(other))
+        x = self.numeric // other
+        return Size1d(x, unit=self.unit, **self._get_font_kwargs())
 
     def __repr__(self):
         cls = self.__class__.__name__
@@ -255,6 +337,66 @@ class Size2d(AbstractSize):
 
     def get_line_len(self, round_factor: int = 0) -> Optional[Numeric]:
         return self.x_size.get_line_len(round_factor)
+
+    def divide_numeric(self, other: Numeric, horizontal: bool = True, vertical: bool = True, rounding: bool = False):
+        x = self.x / other if horizontal else self.x
+        y = self.y / other if vertical else self.y
+        if rounding:
+            x = int(x.numeric)
+            y = int(y.numeric)
+        return Size2d(x, y, unit=self.unit, **self._get_font_kwargs())
+
+    def divide_2d(self, other: AbstractSize, rounding: bool = False):
+        assert isinstance(other, Size2d), TypeError(repr(other))
+        assert other.unit is None, ValueError(f'unit must not be set, got {repr(other.unit)}')
+        x = self.x / other.x_numeric
+        y = self.y / other.y_numeric
+        if rounding:
+            x = int(x.numeric)
+            y = int(y.numeric)
+        return Size2d(x, y, unit=self.unit, **self._get_font_kwargs())
+
+    def get_area_numeric(self) -> float:
+        return self.x_numeric * self.y_numeric
+
+    def _compare(self, other: AbstractSize, cmp: Callable):
+        assert isinstance(other, Size2d), TypeError(other)
+        a = self.get_area_numeric()
+        b = other.get_for_units(self.unit).get_area_numeric()
+        return cmp(a, b)
+
+    def __add__(self, other: AbstractSize):
+        assert isinstance(other, Size2d)
+        x_sum = self.x_size + other.x_size
+        y_sum = self.y_size + other.y_size
+        return self.__class__(x_sum, y_sum)
+
+    def __neg__(self):
+        x_neg = -self.x_size
+        y_neg = -self.y_size
+        return self.__class__(x_neg, y_neg)
+
+    def __sub__(self, other: AbstractSize):
+        assert isinstance(other, Size2d)
+        return self.__add__(-other)
+
+    def __truediv__(self, other):
+        if isinstance(other, NUMERIC):
+            is_horizontal = self.x > self.y
+            return self.divide_numeric(other, horizontal=is_horizontal, vertical=not is_horizontal, rounding=False)
+        elif isinstance(other, Size2d):
+            return self.divide_2d(other, rounding=False)
+        else:
+            raise TypeError(repr(other))
+
+    def __floordiv__(self, other):
+        if isinstance(other, NUMERIC):
+            is_horizontal = self.x > self.y
+            return self.divide_numeric(other, horizontal=is_horizontal, vertical=not is_horizontal, rounding=True)
+        elif isinstance(other, Size2d):
+            return self.divide_2d(other, rounding=True)
+        else:
+            raise TypeError(repr(other))
 
     def __repr__(self):
         cls = self.__class__.__name__
