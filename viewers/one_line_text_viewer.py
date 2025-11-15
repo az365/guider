@@ -1,5 +1,7 @@
 from typing import Iterable
 
+from util.types import PRIMITIVES
+from views.text_view import TextView
 from viewers.text_viewer import TextViewer
 
 
@@ -7,7 +9,13 @@ class OneLineTextViewer(TextViewer):
     def get_view(self, obj) -> str:
         data = self.get_data(obj)
         line = ''
-        if isinstance(data, dict):
+        if isinstance(data, str):
+            return data
+        elif isinstance(data, PRIMITIVES):
+            return str(data)
+        elif isinstance(data, TextView):
+            line = data.get_text()
+        elif isinstance(data, dict):
             for k, v in data.items():
                 if line:
                     line += ', '

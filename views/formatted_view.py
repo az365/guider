@@ -1,6 +1,7 @@
 from typing import Optional, Iterable, Union
 
 from util.const import INDENT, MAX_MD_ROW_LEN
+from util.types import PRIMITIVES
 from util.ext import HTML, display
 from visual.formatting_tag import AbstractFormattingTag, TagType
 from views.text_view import TextView
@@ -56,7 +57,7 @@ class FormattedView(TextView):
         one_line = one_line.replace('\n\n', '\n')
         yield from one_line.split('\n')
 
-    def _get_text_parts(self):
+    def _get_text_parts(self) -> Iterable[str]:
         if self.tag:
             yield self.tag.get_text_open_tag()
         for i in self.get_data():
@@ -64,6 +65,8 @@ class FormattedView(TextView):
                 pass
             elif isinstance(i, str):
                 yield i
+            elif isinstance(i, PRIMITIVES):
+                yield str(i)
             elif isinstance(i, FormattedView) or hasattr(i, '_get_text_parts'):
                 if i.get_tag_type() == TagType.List:
                     for j in i._get_text_parts():
@@ -100,10 +103,12 @@ class FormattedView(TextView):
                 pass
             elif isinstance(i, str):
                 yield i
+            elif isinstance(i, PRIMITIVES):
+                yield str(i)
             elif isinstance(i, FormattedView) or hasattr(i, 'get_html_lines'):
                 yield from i.get_html_lines()
             else:
-                raise TypeError(i)
+                raise TypeError(repr(i))
 
     def show(self):
         if HTML:
