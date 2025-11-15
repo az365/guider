@@ -49,15 +49,22 @@ class Style:
                 style[k.replace('_', '-')] = v
         return style
 
-    def _get_init_kwargs(self) -> dict:  # get_props() ?
-        return vars(self).copy()
+    def _get_init_kwargs(self, skip_none: bool = True) -> dict:
+        if skip_none:
+            init_kwargs = dict()
+            for k, v in vars(self).items():
+                if v is not None:
+                    init_kwargs[k] = v
+            return init_kwargs
+        else:
+            return vars(self).copy()
 
     def __add__(self, other):
         props = self._get_init_kwargs()
         if other is None:
             pass
         elif isinstance(other, Style):
-            props.update(other._get_init_kwargs())
+            props.update(other._get_init_kwargs(skip_none=True))
         else:
             raise TypeError(other)
         return Style(**props)
