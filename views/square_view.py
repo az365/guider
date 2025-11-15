@@ -1,17 +1,17 @@
 from collections import OrderedDict
 from typing import Optional, Iterable, Union
 
-from visual.size import Size
+from visual.size import Size2d
 from visual.style import Style
 from views.formatted_view import FormattedView
 
 
 class SquareView(FormattedView):
-    def __init__(self, data: Iterable, tag, size: Size, style: Style, hint: str):
+    def __init__(self, data: Iterable, tag, size: Size2d, style: Optional[Style], hint: Optional[str]):
         super().__init__(data, tag)
         self.size = size
         self.style = style or Style()
-        self.hint = hint  # ToDo: or move to FormattingTag ?
+        self.hint = hint
 
     def get_html_lines(self) -> Iterable[str]:
         yield self.get_html_open_tag()
