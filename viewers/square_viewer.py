@@ -3,8 +3,9 @@ from typing import Tuple, Union, Iterable, Optional
 from visual.formatting_tag import TagType
 from views.formatted_view import FormattedView
 from views.square_view import SquareView
+from visual.unit import Unit
+from visual.size import Size
 from visual.style import Style
-from visual.size import Unit, Size
 from viewers.tree_viewer import TreeViewer
 
 
@@ -150,4 +151,3 @@ class SquareViewer(TreeViewer):
         else:
             items = list(self.get_wrapped_object(obj).get_props().items())
         return items
-
