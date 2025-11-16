@@ -1,5 +1,7 @@
 from typing import Iterable
 
+from util.const import DEFAULT_LINE_LEN
+
 
 def is_empty(obj) -> bool:
     if obj is None:
@@ -59,8 +61,29 @@ def get_attr_str(obj: dict, quote: str = '', delimiter: str = ', ') -> str:
     array = list()
     for k, v in obj.items():
         if quote:
-            v.replace(quote, '\\' + quote)
+            str(v).replace(quote, '\\' + quote)
             v = f'{quote}{v}{quote}'
         item = f'{k}={v}'
         array.append(item)
     return get_array_str(array, scope=False, quote='', delimiter=delimiter)
+
+def crop(
+        text,
+        max_len: int = DEFAULT_LINE_LEN,
+        crop_suffix: str = '...',
+        short_crop_suffix: str = '_',
+) -> str:
+    text = str(text)
+    crop_len = len(crop_suffix)
+    if max_len is not None:
+        assert isinstance(max_len, int), TypeError('max_len bust be int or None')
+        text_len = len(text)
+        if text_len > max_len:
+            value_len = max_len - crop_len
+            if value_len > 0:
+                text = text[:value_len] + crop_suffix
+            elif max_len > 1:
+                text = text[:max_len - 1] + short_crop_suffix
+            else:
+                text = text[:max_len]
+    return text

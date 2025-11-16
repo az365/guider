@@ -1,5 +1,7 @@
 from typing import Tuple, Union, Iterable, Optional
 
+from util.const import MAX_MD_ROW_LEN
+from util.functions import crop
 from visual.unit import Unit
 from visual.size import Size1d, Size2d
 from visual.style import Style
@@ -8,6 +10,7 @@ from views.formatted_view import FormattedView
 from views.square_view import SquareView
 from viewers.tree_viewer import TreeViewer
 
+HINT_LEN = MAX_MD_ROW_LEN
 MIN_SIZE_FOR_ITEMS_VIEW = Size1d('1em')
 TITLE_STYLE = Style(color='white', background='grey')
 ITEM_STYLE = Style(
@@ -145,7 +148,7 @@ class SquareViewer(TreeViewer):
         for i in (title_view, content_view):
             if i is not None:
                 entire_view_items.append(i)
-        hint = f'directional view: {one_line[:40]}'
+        hint = crop(one_line, HINT_LEN)
         if entire_view_items:
             entire_view = SquareView(entire_view_items, tag=TagType.Div, size=size, style=style, hint=hint)
         else:
@@ -180,7 +183,7 @@ class SquareViewer(TreeViewer):
                     value_view = self.get_view(v, size=value_size, style=value_style, depth=depth - 1)
                 i_squared = SquareView([key_view, value_view], tag=None, size=i_size, style=i_style, hint=None)
                 squared_items.append(i_squared)
-        items_hint = f'items: {repr(obj)[:40]}'
+        items_hint = crop(repr(obj), max_len=HINT_LEN)
         return SquareView(squared_items, tag=TagType.Div, size=content_size, style=None, hint=items_hint)
 
     def _get_key_value_pairs_from_obj(self, obj) -> list[tuple]:
