@@ -6,13 +6,13 @@ from viewers.text_viewer import TextViewer
 
 
 class OneLineTextViewer(TextViewer):
-    def get_view(self, obj) -> str:
+    def get_view(self, obj) -> TextView:
         data = self.get_data(obj)
         line = ''
         if isinstance(data, str):
-            return data
+            line = data
         elif isinstance(data, PRIMITIVES):
-            return str(data)
+            line = str(data)
         elif isinstance(data, TextView):
             line = data.get_text()
         elif isinstance(data, dict):
@@ -44,4 +44,4 @@ class OneLineTextViewer(TextViewer):
             line = name
         else:
             line = str(data)
-        return line
+        return TextView([line])

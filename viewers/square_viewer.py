@@ -148,7 +148,7 @@ class SquareViewer(TreeViewer):
         for i in (title_view, content_view):
             if i is not None:
                 entire_view_items.append(i)
-        hint = crop(one_line, HINT_LEN)
+        hint = one_line.crop(HINT_LEN, inplace=False)
         if entire_view_items:
             entire_view = SquareView(entire_view_items, tag=TagType.Div, size=size, style=style, hint=hint)
         else:

@@ -66,6 +66,21 @@ class TextView(AbstractView):
                 line = crop(line, max_line_len)
             yield line
 
+    def replace(self, __old: str, __new: str, inplace: bool = False) -> Native:
+        """
+        Return a copy with all occurrences of substring old replaced by new.
+        """
+        replaced_lines = self._get_replaced_lines(__old, __new)
+        return self._get_modified_view(replaced_lines, inplace=inplace)
+
+    def _get_replaced_lines(self, __old: str, __new: str) -> Iterable[str]:
+        for line in self.get_text_lines():
+            assert isinstance(line, str), TypeError(repr(line))
+            yield line.replace(__old, __new)
+
+    def __len__(self):
+        return self.get_lines_count()
+
     def __str__(self):
         return self.get_text()
 

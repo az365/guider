@@ -73,6 +73,8 @@ class FormattedView(TextView):
                         yield j.replace('\n', '\n' + INDENT)
                 else:
                     yield from i._get_text_parts()
+            elif isinstance(i, TextView):
+                yield from i.get_text_lines()
             else:
                 raise TypeError(i)
         if self.tag:
@@ -92,6 +94,8 @@ class FormattedView(TextView):
                         yield j.replace('\n', '\n' + INDENT)
                 else:
                     yield from i._get_md_parts()
+            elif isinstance(i, TextView):
+                yield from i.get_text_lines()
             else:
                 raise TypeError(i)
         if self.tag:
@@ -107,6 +111,9 @@ class FormattedView(TextView):
                 yield str(i)
             elif isinstance(i, FormattedView) or hasattr(i, 'get_html_lines'):
                 yield from i.get_html_lines()
+            elif isinstance(i, TextView):
+                for line in self.get_text_lines():
+                    yield f'{line}<br>'
             else:
                 raise TypeError(repr(i))
 
