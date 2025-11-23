@@ -2,10 +2,7 @@ from typing import Tuple, Union, Iterable, Optional
 
 from util.const import MAX_MD_ROW_LEN
 from util.functions import crop
-from visual.unit import Unit
-from visual.size import Size1d, Size2d
-from visual.style import Style
-from visual.formatting_tag import TagType
+from visual import Unit, Size1d, Size2d, Style, TagType
 from views.formatted_view import FormattedView
 from views.square_view import SquareView
 from viewers.tree_viewer import TreeViewer

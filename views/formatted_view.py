@@ -1,19 +1,14 @@
 from typing import Optional, Iterable, Union
 
-from util.const import INDENT, MAX_MD_ROW_LEN
-from util.types import PRIMITIVES
 from util.ext import HTML, display
-from visual.formatting_tag import AbstractFormattingTag, TagType
+from util.const import INDENT
+from util.types import PRIMITIVES
+from visual import TagType, AbstractFormattingTag
 from views.text_view import TextView
 
 Native = TextView
 Text = Union[TextView, str]
 Tag = Union[AbstractFormattingTag, TagType, None]
-
-PARAGRAPH_LIKE_TAGS = TagType.Paragraph, TagType.Header, TagType.ListItem
-PARAGRAPH_PART_TAGS = TagType.HyperLink, TagType.Font
-TEXT_LINE_TAGS = *PARAGRAPH_LIKE_TAGS, *PARAGRAPH_PART_TAGS
-CANNOT_BE_ONE_LINE_TAGS = TagType.ListItem,
 
 
 class FormattedView(TextView):

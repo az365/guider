@@ -1,52 +1,10 @@
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Optional, Union
 
 from util.functions import get_attr_str
+from visual.tag_type import TagType
 
 HTML_ATTR_MAPPING = dict(id='name', title='hint', href='url')
-
-
-class TagType(Enum):
-    Div = 'div'
-    Span = 'span'
-    Paragraph = 'p'
-    Header = 'h'
-    HyperLink = 'a'
-    List = 'ul'
-    ListItem = 'li'
-    Font = 'font'
-
-    def get_class(self):
-        if self.name == self.Div.name:
-            return Div
-        elif self.name == self.Span.name:
-            return Span
-        elif self.name == self.Paragraph.name:
-            return Paragraph
-        elif self.name == self.Header.name:
-            return Header
-        elif self.name == self.HyperLink.name:
-            return HyperLink
-        elif self.name == self.List.name:
-            return List
-        elif self.name == self.ListItem.name:
-            return ListItem
-        elif self.name == self.Font.name:
-            return Font
-        else:
-            raise ValueError
-
-    def get_builder(self):
-        cls = self.get_class()
-        if hasattr(cls, 'create'):
-            return cls.create
-        else:
-            return cls
-
-    def create(self, *args, **kwargs):
-        builder = self.get_builder()
-        return builder(*args, **kwargs)
 
 
 class AbstractFormattingTag(ABC):
@@ -338,3 +296,15 @@ class Font(AbstractFormattingTag):
             return True
         else:
             return False
+
+
+TagType.set_classes(
+    Div=Div,
+    Span=Span,
+    Paragraph=Paragraph,
+    Header=Header,
+    HyperLink=HyperLink,
+    List=List,
+    ListItem=ListItem,
+    Font=Font,
+)

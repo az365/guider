@@ -2,7 +2,7 @@ from typing import Optional, Iterable
 
 from util.types import COLLECTION_TYPES
 from wrappers.wrapper_interface import WrapperInterface
-from visual.formatting_tag import TagType
+from visual import TagType
 from views.formatted_view import FormattedView
 from viewers.text_viewer import TextViewer
 from viewers.one_line_text_viewer import OneLineTextViewer
