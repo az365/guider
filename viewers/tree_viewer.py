@@ -23,7 +23,7 @@ class TreeViewer(TextViewer):
             tag: Optional[TagType] = None,
             ordered: Optional[bool] = False,
     ) -> FormattedView:
-        wrapped_obj = self.get_wrapped_object(obj)
+        wrapped_obj = self._get_wrapped_object(obj)
         one_line = self._get_one_line(wrapped_obj)
         if prefix:
             one_line = FormattedView([prefix, one_line])

@@ -12,7 +12,7 @@ class SerialViewer(AbstractViewer):
         self.skip_empty = skip_empty
 
     def get_view(self, obj):
-        obj = self.get_wrapped_object(obj)
+        obj = self._get_wrapped_object(obj)
         return SerialView(obj, depth=self.depth, use_ids=self.use_ids, skip_empty=self.skip_empty)
 
     @staticmethod

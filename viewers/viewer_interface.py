@@ -7,10 +7,16 @@ class ViewerInterface(ABC):
     def get_view(self, obj):
         pass
 
+    @staticmethod
     @abstractmethod
-    def get_wrapped_object(self, obj):
+    def _get_wrapped_object(obj):
         pass
 
     @abstractmethod
     def get_data(self, obj):
+        """
+        Unwraps wrapped data from object.
+        :param obj:
+        :return: unwrapped data
+        """
         pass

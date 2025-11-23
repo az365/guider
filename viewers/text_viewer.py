@@ -1,17 +1,17 @@
-from viewers.abstract_viewer import AbstractViewer
 from views.text_view import TextView
+from viewers.abstract_viewer import AbstractViewer
 
 
 class TextViewer(AbstractViewer):
     def get_view(self, obj) -> TextView:
-        obj = self.get_wrapped_object(obj)
+        obj = self._get_wrapped_object(obj)
         return TextView(obj)
 
     def get_title(self, obj) -> str:
-        obj = self.get_wrapped_object(obj)
-        obj2 = obj.get_raw_object()
-        cls = obj2.__class__.__name__
-        name = repr(obj2)
+        obj = self._get_wrapped_object(obj)
+        raw_obj = obj.get_raw_object()
+        cls = raw_obj.__class__.__name__
+        name = repr(raw_obj)
         return f'{cls} {name}'
 
     def print(self, obj):

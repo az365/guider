@@ -34,7 +34,7 @@ class TableViewer(TextViewer):
             columns = 'field', 'hint', 'value'
             rows = list(self._get_table_rows_from_dict(obj, cell_getter))
         else:
-            obj = self.get_wrapped_object(obj)
+            obj = self._get_wrapped_object(obj)
             props = obj.get_props()
             return self.get_view(props, depth=depth)
         return TableView(data=rows, columns=columns)
@@ -46,7 +46,7 @@ class TableViewer(TextViewer):
             yield {
                 k: cell_getter(v)
                 for k, v in
-                self.get_wrapped_object(i).get_props().items()
+                self._get_wrapped_object(i).get_props().items()
             }
 
     def _get_table_rows_from_dict(self, obj: dict, cell_getter: Optional[Callable] = None) -> Iterable[dict]:

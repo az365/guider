@@ -9,9 +9,10 @@ class AbstractViewer(ViewerInterface):
     def get_view(self, obj):
         pass
 
-    def get_wrapped_object(self, obj):
+    @staticmethod
+    def _get_wrapped_object(obj) -> CommonWrapper:
         if not isinstance(obj, CommonWrapper):
-            obj = CommonWrapper(obj)
+            obj = CommonWrapper.wrap(obj)
         return obj
 
     def get_data(self, obj):

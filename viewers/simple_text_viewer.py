@@ -34,7 +34,7 @@ class SimpleTextViewer(TextViewer):
         else:
             yield self.get_title(obj)
             if depth > 0:
-                obj = self.get_wrapped_object(obj)
+                obj = self._get_wrapped_object(obj)
                 assert isinstance(obj, CommonWrapper)
                 props = obj.get_props()
                 for line in self.get_lines(props, depth=depth-1):
@@ -49,7 +49,7 @@ class SimpleTextViewer(TextViewer):
             yield block_lines
 
     def get_content_pairs(self, obj) -> Iterable[tuple]:
-        obj = self.get_wrapped_object(obj)
+        obj = self._get_wrapped_object(obj)
         assert isinstance(obj, CommonWrapper)
         yield 'data', obj.get_data()
         yield 'props', obj.get_props()

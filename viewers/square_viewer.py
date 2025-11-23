@@ -191,5 +191,5 @@ class SquareViewer(TreeViewer):
         elif isinstance(obj, Iterable) and not isinstance(obj, str):
             items = list(enumerate(obj))
         else:
-            items = list(self.get_wrapped_object(obj).get_props().items())
+            items = list(self._get_wrapped_object(obj).get_props().items())
         return items
