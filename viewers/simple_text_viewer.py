@@ -1,10 +1,11 @@
 from collections.abc import Callable
-from typing import Iterable, Optional
+from typing import Iterable
 
+from util.functions import crop
+from wrappers.common_wrapper import CommonWrapper
 from viewers.text_viewer import TextViewer
 from viewers.one_line_text_viewer import OneLineTextViewer
 from views.text_view import TextView
-from wrappers.common_wrapper import CommonWrapper
 
 
 class SimpleTextViewer(TextViewer):
@@ -37,9 +38,7 @@ class SimpleTextViewer(TextViewer):
                 assert isinstance(obj, CommonWrapper)
                 props = obj.get_props()
                 for line in self.get_lines(props, depth=depth-1):
-                    if len(line) > max_line_len - len(indent):
-                        line = line[:max_line_len - len(indent) - 3] + '...'
-                    yield indent + line
+                    yield crop(indent + line, max_line_len)
 
     def get_blocks(self, obj, depth=1, indent='  ') -> Iterable[list]:
         for k, v in self.get_content_pairs(obj):

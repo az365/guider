@@ -59,7 +59,7 @@ class TextView(AbstractView):
             crop_suffix: str = '...',
     ) -> Iterable[str]:
         for no, line in enumerate(self.get_text_lines()):
-            if lines_count is None or no < lines_count:
+            if lines_count is not None and no < lines_count:
                 if no + 1 == lines_count and self.get_lines_count() > lines_count:
                     line = crop_suffix
             if max_line_len is not None:

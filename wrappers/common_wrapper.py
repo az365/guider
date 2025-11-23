@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from util.const import PATH_DELIMITER
 from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
-from util.functions import get_id, get_array_str, remove_empty_values_from_dict
+from util.functions import get_id, get_array_str, remove_empty_values_from_dict, crop
 from wrappers.wrapper_interface import WrapperInterface
 from viewers.viewer_interface import ViewerInterface
 
@@ -364,9 +364,7 @@ class CommonWrapper(WrapperInterface):
         else:
             props_list = [f'{k}={v}' for k, v in self.get_props(add=[]).items()]
         line = ', '.join(props_list)
-        if len(line) > max_len:
-            line = line[:max_len - 3] + '...'
-        return line
+        return crop(line, max_len)
 
     def __str__(self):
         cls = self.__class__.__name__
