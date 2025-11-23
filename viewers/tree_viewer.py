@@ -1,8 +1,9 @@
 from typing import Optional, Iterable
 
+from util.types import COLLECTION_TYPES
 from wrappers.wrapper_interface import WrapperInterface
-from views.formatted_view import FormattedView
 from visual.formatting_tag import TagType
+from views.formatted_view import FormattedView
 from viewers.text_viewer import TextViewer
 from viewers.one_line_text_viewer import OneLineTextViewer
 
@@ -31,7 +32,7 @@ class TreeViewer(TextViewer):
         if depth > 0:
             if isinstance(obj, dict):
                 items = self._get_view_items_for_dict(obj, depth=depth-1)
-            elif isinstance(obj, (tuple, list, set)):
+            elif isinstance(obj, COLLECTION_TYPES) and not isinstance(obj, str):
                 items = self._get_view_items_for_iter(obj, depth=depth-1, ordered=ordered)
             else:
                 items = self._get_view_items_for_dict(wrapped_obj.get_props(), depth=depth-1)

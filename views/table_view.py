@@ -1,10 +1,11 @@
 from typing import Iterable, Iterator, Union, Optional
 
+from util.types import Array
 from util.functions import is_empty
 from views.formatted_view import FormattedView
 
 Native = FormattedView
-Array = Union[list, tuple]
+
 
 class TableView(FormattedView):
     def __init__(self, data: Iterable[Array], columns: Optional[list] = None):
@@ -35,9 +36,10 @@ class TableView(FormattedView):
     def get_text_lines(self, including_title: bool = True) -> list:
         lines = list()
         for row in self.get_iterable_rows(including_title=including_title):
-            row = ['-' if c is None else str(c) for c in row]
-            line = '\t'.join(row)
-            lines.append(line)
+            if row is not None:
+                row = ['-' if c is None else str(c) for c in row]
+                line = '\t'.join(row)
+                lines.append(line)
         return lines
 
     def get_md_lines(self) -> Iterator[str]:

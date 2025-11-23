@@ -1,9 +1,10 @@
 from typing import Sized, Optional, Iterable, Callable, Union
 
-from viewers.tree_viewer import TreeViewer
+from util.types import COLLECTION_TYPES
 from views.table_view import TableView
 from viewers.text_viewer import TextViewer
 from viewers.one_line_text_viewer import OneLineTextViewer
+from viewers.tree_viewer import TreeViewer
 
 
 class TableViewer(TextViewer):
@@ -25,7 +26,7 @@ class TableViewer(TextViewer):
             cell_getter = self._get_list_view
         else:
             cell_getter = self._get_one_line
-        if isinstance(obj, (tuple, list, set)) and not isinstance(obj, str):
+        if isinstance(obj, COLLECTION_TYPES) and not isinstance(obj, str):
             records = list(self._get_table_records_from_iter(obj, cell_getter))
             columns = list(self._get_columns_from_records(records))
             rows = list(self._get_rows_from_records(records, columns))
