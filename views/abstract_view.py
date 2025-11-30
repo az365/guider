@@ -1,3 +1,6 @@
+from util.functions import get_repr
+
+
 class AbstractView:
     def __init__(self, data):
         self._data = None
@@ -11,8 +14,12 @@ class AbstractView:
 
     data = property(get_data, set_data)
 
+    def get_repr(self):
+        obj_repr = get_repr(self.get_data())
+        return f'({obj_repr})'
+
     def __repr__(self):
-        return repr(self._data)
+        return self.get_repr()
 
     def __str__(self):
         return str(self._data)

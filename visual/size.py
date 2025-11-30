@@ -4,7 +4,7 @@ from typing import Optional, Union, Callable
 
 from util.const import DEFAULT_FONT_SIZE, DEFAULT_FONT_PROPORTION
 from util.types import Numeric, NUMERIC
-from util.functions import get_attr_str
+from util.functions import get_attr_str, get_repr
 from visual.unit import Unit
 
 DEFAULT_UNIT = Unit.Pixel
@@ -66,6 +66,9 @@ class AbstractSize(ABC):
 
     def __ge__(self, other):
         return self._compare(other, cmp=lambda a, b: a >= b)
+
+    def __repr__(self):
+        return get_repr(self)
 
 SizeOrNumeric = Union[AbstractSize, Numeric, str, None]
 
@@ -199,11 +202,6 @@ class Size1d(AbstractSize):
         assert isinstance(other, (int, float)), TypeError(repr(other))
         x = self.numeric // other
         return Size1d(x, unit=self.unit, **self._get_font_kwargs())
-
-    def __repr__(self):
-        cls = self.__class__.__name__
-        attr = get_attr_str(vars(self))
-        return f'{cls}({attr})'
 
     def __str__(self):
         if self.numeric is None:

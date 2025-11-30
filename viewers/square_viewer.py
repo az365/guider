@@ -1,7 +1,7 @@
 from typing import Tuple, Union, Iterable, Optional
 
 from util.const import MAX_MD_ROW_LEN
-from util.functions import crop
+from util.functions import crop, get_repr
 from visual import Unit, Size1d, Size2d, Style, TagType
 from views.formatted_view import FormattedView
 from views.square_view import SquareView
@@ -79,7 +79,7 @@ class SquareViewer(TreeViewer):
             depth = self.depth
         lines_count = self.size.get_lines_count()
         line_len = self.size.get_line_len()
-        if lines_count < 0.3 or line_len < 1 or depth < 0 or obj is None:
+        if lines_count < 0.3 or line_len < 1 or depth < 0 or obj is None:  # show placeholder instead of content
             view = self._get_empty_view(obj, size=size, style=style)
         elif lines_count < 1.5:
             view = self._get_one_line_view(obj, size=size, style=style)
@@ -136,7 +136,7 @@ class SquareViewer(TreeViewer):
             elif isinstance(obj, FormattedView):
                 content_view = SquareView(obj, tag=None, size=content_size, style=None, hint=None)
             elif isinstance(obj, str):
-                content_view = SquareView(obj, tag=TagType.Paragraph, size=content_size, style=None, hint=repr(obj))
+                content_view = SquareView(obj, tag=TagType.Paragraph, size=content_size, style=None, hint=get_repr(obj))
             else:
                 content_view = self._get_items_view(obj, content_size=content_size, vertical=vertical, depth=depth)
         else:
@@ -180,7 +180,7 @@ class SquareViewer(TreeViewer):
                     value_view = self.get_view(v, size=value_size, style=value_style, depth=depth - 1)
                 i_squared = SquareView([key_view, value_view], tag=None, size=i_size, style=i_style, hint=None)
                 squared_items.append(i_squared)
-        items_hint = crop(repr(obj), max_len=HINT_LEN)
+        items_hint = crop(get_repr(obj), max_len=HINT_LEN)
         return SquareView(squared_items, tag=TagType.Div, size=content_size, style=None, hint=items_hint)
 
     def _get_key_value_pairs_from_obj(self, obj) -> list[tuple]:

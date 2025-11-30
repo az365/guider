@@ -2,6 +2,7 @@ from typing import Iterable, Sized
 from collections import OrderedDict
 
 from util.const import DEFAULT_LINE_LEN
+from util.types import PRIMITIVES
 
 
 def is_empty(obj) -> bool:
@@ -52,6 +53,19 @@ def get_hint(obj) -> str:
         return f'{len(obj)}'
     else:
         return obj.__class__.__name__
+
+
+def get_repr(obj) -> str:
+    if isinstance(obj, PRIMITIVES):
+        return repr(obj)
+    elif hasattr(obj, 'get_repr'):  # isinstance(obj, WrapperInterface):
+        return obj.get_repr()
+    elif hasattr(obj, '__class__') and hasattr(obj, '__dict__'):
+        cls = obj.__class__.__name__
+        attr = get_attr_str(obj.__dict__)
+        return f'{cls}({attr})'
+    else:
+        return repr(obj)
 
 
 def get_array_str(obj: Iterable, scope: bool = False, quote: str = '', delimiter: str = ', ') -> str:

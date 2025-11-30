@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from util.const import PATH_DELIMITER
 from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
-from util.functions import get_id, get_array_str, remove_empty_values_from_dict, crop, get_hint
+from util.functions import get_id, get_array_str, remove_empty_values_from_dict, crop, get_hint, get_repr
 from wrappers.wrapper_interface import WrapperInterface
 from viewers.viewer_interface import ViewerInterface
 
@@ -93,6 +93,11 @@ class CommonWrapper(WrapperInterface):
 
     def get_class(self) -> Class:
         return self._obj.__class__
+
+    def get_repr(self) -> str:
+        obj = self.get_raw_object()
+        obj_repr = get_repr(obj)
+        return f'({obj_repr})'
 
     def get_hint(self) -> str:
         obj = self.get_raw_object()
@@ -364,9 +369,7 @@ class CommonWrapper(WrapperInterface):
         return f'{cls}({obj})'
 
     def __repr__(self):
-        cls = self.__class__.__name__
-        props = repr(self.get_raw_object())
-        return f'{cls}({props})'
+        return self.get_repr()
 
     def __eq__(self, other):
         raw_self = self.get_raw_object()

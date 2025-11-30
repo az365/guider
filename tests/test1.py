@@ -9,7 +9,7 @@ class TestCommonWrapper(unittest.TestCase):
         d = dict(a=1, b=2)
         w = CommonWrapper(d)
 
-        expected_repr = "CommonWrapper({'a': 1, 'b': 2})"
+        expected_repr = "({'a': 1, 'b': 2})"
         self.assertEqual(expected_repr, repr(w))
 
     def test_second_common_wrapper(self):
@@ -17,7 +17,7 @@ class TestCommonWrapper(unittest.TestCase):
         w = CommonWrapper(d)
         w2 = CommonWrapper(w)
 
-        expected_repr = "CommonWrapper(CommonWrapper({'a': 1, 'b': 2}))"
+        expected_repr = "(({'a': 1, 'b': 2}))"
         self.assertEqual(expected_repr, repr(w2))
 
         expected_props = {'a': 1, 'b': 2}
@@ -31,7 +31,7 @@ class TestCommonWrapper(unittest.TestCase):
         parsed = viewer.parse(line)
         self.assertEqual(d, parsed.get_raw_object())
         yaml_repr = viewer.get_view(parsed).get_yaml()
-        self.assertEqual(yaml_repr, line)
+        self.assertEqual(line, yaml_repr)
 
 
 if __name__ == '__main__':

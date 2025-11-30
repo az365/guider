@@ -78,6 +78,9 @@ class TextView(AbstractView):
             assert isinstance(line, str), TypeError(repr(line))
             yield line.replace(__old, __new)
 
+    def get_repr(self):
+        return repr(self.get_text())
+
     def __len__(self):
         return self.get_lines_count()
 
@@ -85,4 +88,4 @@ class TextView(AbstractView):
         return self.get_text()
 
     def __repr__(self):
-        return repr(self.get_text())
+        return self.get_repr()

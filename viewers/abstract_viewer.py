@@ -1,3 +1,4 @@
+from util.functions import get_repr
 from viewers.viewer_interface import ViewerInterface
 from wrappers.common_wrapper import CommonWrapper
 
@@ -22,12 +23,7 @@ class AbstractViewer(ViewerInterface):
             return obj
 
     def __repr__(self):
-        cls = self.__class__.__name__
-        kwarg_str_list = []
-        for k, v in self.__dict__.items():
-            kwarg_str_list.append(f'{k}={v}')
-        kwarg_str = ', '.join(kwarg_str_list)
-        return f'{cls}({kwarg_str})'
+        return get_repr(self)
 
     def __str__(self):
         return self.__repr__()

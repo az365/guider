@@ -10,7 +10,7 @@ class LinkedTerm(Term):
             self,
             short_name: str,
             synonymes: Optional[list] = None,
-            definition: str='',
+            definition: str = '',
 
             parent: Terms = None, child: Terms = None,
             cls: Terms = None, instance: Terms = None,
@@ -108,8 +108,11 @@ class LinkedTerm(Term):
             if name in names:
                 return i
 
-    def __repr__(self):
+    def get_repr(self):
         return self.short_name
+
+    def __repr__(self):
+        return self.get_repr()
 
     def __str__(self):
         if self.synonymes:
