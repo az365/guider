@@ -1,4 +1,5 @@
-from typing import Iterable
+from typing import Iterable, Sized
+from collections import OrderedDict
 
 from util.const import DEFAULT_LINE_LEN
 
@@ -38,6 +39,19 @@ def get_id(obj):
         return obj.short_name
     elif hasattr(obj, 'get_short_name'):
         return obj.get_name_or_str()
+
+
+def get_hint(obj) -> str:
+    if hasattr(obj, 'get_hint'):  # isinstance(obj, WrapperInterface)
+        return obj.get_hint()
+    elif isinstance(obj, dict):
+        count = len(obj)
+        columns = '2+' if isinstance(obj, OrderedDict) else '2'
+        return f'{count}x{columns}'
+    elif isinstance(obj, Sized) and not isinstance(obj, str):
+        return f'{len(obj)}'
+    else:
+        return obj.__class__.__name__
 
 
 def get_array_str(obj: Iterable, scope: bool = False, quote: str = '', delimiter: str = ', ') -> str:

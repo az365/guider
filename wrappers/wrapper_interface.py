@@ -16,6 +16,9 @@ class WrapperInterface:
     def set_default_viewer(cls, viewer: ViewerInterface):
         pass
 
+    def get_hint(self) -> str:
+        pass
+
     def get_props(self, including_protected: bool = False) -> dict:
         pass
 

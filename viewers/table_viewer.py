@@ -1,10 +1,13 @@
-from typing import Sized, Optional, Iterable, Callable, Union
+from typing import Optional, Iterable, Callable, Union
 
 from util.types import COLLECTION_TYPES
+from util.functions import get_hint
 from views.table_view import TableView
 from viewers.text_viewer import TextViewer
 from viewers.one_line_text_viewer import OneLineTextViewer
 from viewers.tree_viewer import TreeViewer
+
+DEFAULT_COLUMN_NAMES = 'field', 'hint', 'value'
 
 
 class TableViewer(TextViewer):
@@ -31,7 +34,7 @@ class TableViewer(TextViewer):
             columns = list(self._get_columns_from_records(records))
             rows = list(self._get_rows_from_records(records, columns))
         elif isinstance(obj, dict):
-            columns = 'field', 'hint', 'value'
+            columns = DEFAULT_COLUMN_NAMES
             rows = list(self._get_table_rows_from_dict(obj, cell_getter))
         else:
             obj = self._get_wrapped_object(obj)
@@ -49,18 +52,13 @@ class TableViewer(TextViewer):
                 self._get_wrapped_object(i).get_props().items()
             }
 
-    def _get_table_rows_from_dict(self, obj: dict, cell_getter: Optional[Callable] = None) -> Iterable[dict]:
+    def _get_table_rows_from_dict(self, obj: dict, cell_getter: Optional[Callable] = None) -> Iterable[tuple]:
         if not cell_getter:
             cell_getter = self._get_one_line
         for field, value in obj.items():
-            if isinstance(value, dict):
-                hint = f'({len(value)}x2)'
-            elif isinstance(value, Sized):
-                hint = f'({len(value)})'
-            else:
-                hint = value.__class__.__name__
+            hint = get_hint(value)
             value_repr = cell_getter(value)
-            yield field, hint, value_repr
+            yield field, hint, value_repr  # matches DEFAULT_COLUMN_NAMES
 
     @staticmethod
     def _get_columns_from_records(records: Iterable[dict]) -> list:

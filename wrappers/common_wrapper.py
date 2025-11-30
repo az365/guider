@@ -2,8 +2,8 @@ from typing import Optional, Iterable, Union, Any
 from collections import OrderedDict
 
 from util.const import PATH_DELIMITER
-from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES, COLLECTION_TYPES
-from util.functions import get_id, get_array_str, remove_empty_values_from_dict, crop
+from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
+from util.functions import get_id, get_array_str, remove_empty_values_from_dict, crop, get_hint
 from wrappers.wrapper_interface import WrapperInterface
 from viewers.viewer_interface import ViewerInterface
 
@@ -94,18 +94,10 @@ class CommonWrapper(WrapperInterface):
     def get_class(self) -> Class:
         return self._obj.__class__
 
-    def get_hint(self) -> Union[str, int]:
+    def get_hint(self) -> str:
         obj = self.get_raw_object()
-        if isinstance(obj, CommonWrapper):
-            return obj.get_hint()
-        elif isinstance(obj, COLLECTION_TYPES) and not isinstance(obj, str):
-            return len(obj)
-        elif isinstance(obj, dict):
-            count = len(list)
-            columns = '2+' if isinstance(obj, OrderedDict) else '2'
-            return f'{count}*{columns}'
-        else:
-            return type(obj).__name__
+        hint = get_hint(obj)
+        return f'({hint})'
 
     def get_vars(self, including_protected: bool = False) -> dict:
         obj = self.get_raw_object()
