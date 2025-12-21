@@ -21,11 +21,13 @@ class Style:
             margin: Optional[str] = None,
             padding: Optional[str] = None,
             spacing: Optional[str] = None,
+            text_align: Optional[str] = None,
     ):
         self.display = display  # размещение элемента: inline, block, inline-block (none, inherit, initial)
         self.overflow_x = overflow_x  # поведение при переполнении: visible, hidden, scroll, auto
         self.overflow_y = overflow_y  # поведение при переполнении: visible, hidden, scroll, auto
         self.text_overflow = text_overflow  # обрезка текста: clip, ellipsis
+        self.text_align = text_align  # выравнивание текста: left, right, center, justify
         self.white_space = white_space  # перенос строки: nowrap, pre, pre-wrap, pre-line, normal
         self.scrollbar_width = scrollbar_width  # полоса прокрутки: auto, thin, none
         self.color = color  # цвет шрифта
