@@ -137,3 +137,18 @@ def get_max_value(data: Iterable, sum_secondary: bool = False) -> float:
         else:
             raise TypeError(v)
     return max_value
+
+
+def smart_round(n: float, count: int = 2, upper: bool = False) -> float:
+    if n >= 1 or n <= -1:
+        num_digits = len(str(abs(int(n))))
+    else:
+        raise NotImplementedError
+    round_digits = num_digits - count
+    if upper:
+        multiplier = 10 ** round_digits
+        shift = 1 if n > 0 else -1
+        rounded = (int(n / multiplier) + shift) * multiplier
+    else:
+        rounded = round(n, -round_digits)
+    return rounded

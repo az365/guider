@@ -1,6 +1,6 @@
 import unittest
 
-from util.functions import get_max_value
+from util.functions import get_max_value, smart_round
 from examples.stats.data_for_charts import simple_funnel_data, rich_funnel_data
 
 
@@ -16,6 +16,23 @@ class TestGetMaxValue(unittest.TestCase):
         self.assertEqual(expected, received)
         expected = 110
         received = get_max_value(rich_funnel_data, sum_secondary=True)
+        self.assertEqual(expected, received)
+
+
+class TestSmartRound(unittest.TestCase):
+    def test_smart_round(self):
+        number = 12345
+        expected = 12000
+        received = smart_round(number)
+        self.assertEqual(expected, received)
+        count = 3
+        number = -12345
+        expected = -12300
+        received = smart_round(number, count)
+        self.assertEqual(expected, received)
+        number = 12345
+        expected = 13000
+        received = smart_round(number, upper=True)
         self.assertEqual(expected, received)
 
 

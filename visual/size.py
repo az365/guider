@@ -68,7 +68,7 @@ class AbstractSize(ABC):
         return self._compare(other, cmp=lambda a, b: a >= b)
 
     def __repr__(self):
-        return get_repr(self)
+        return str(self)
 
 SizeOrNumeric = Union[AbstractSize, Numeric, str, None]
 
@@ -201,6 +201,13 @@ class Size1d(AbstractSize):
     def __floordiv__(self, other):
         assert isinstance(other, (int, float)), TypeError(repr(other))
         x = self.numeric // other
+        return Size1d(x, unit=self.unit, **self._get_font_kwargs())
+
+    def __round__(self, n=None):
+        if n is None:
+            x = int(self._x)
+        else:
+            x = round(self._x, n)
         return Size1d(x, unit=self.unit, **self._get_font_kwargs())
 
     def __str__(self):
@@ -396,10 +403,14 @@ class Size2d(AbstractSize):
         else:
             raise TypeError(repr(other))
 
-    def __repr__(self):
-        cls = self.__class__.__name__
-        attr = get_attr_str(vars(self))
-        return f'{cls}({attr})'
+    def __round__(self, n=None):
+        if n is None:
+            x = int(self._x)
+            y = int(self._y)
+        else:
+            x = round(self._x, n)
+            y = round(self._y, n)
+        return Size2d(x, y, unit=self.unit, **self._get_font_kwargs())
 
     def __str__(self):
         x = '-' if self.x_numeric is None else self.x_numeric
