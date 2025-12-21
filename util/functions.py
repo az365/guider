@@ -115,3 +115,25 @@ def crop(
             else:
                 text = text[:max_len]
     return text
+
+
+def get_max_value(data: Iterable, sum_secondary: bool = False) -> float:
+    max_value = None
+    if isinstance(data, dict):
+        data = data.values()
+    for v in data:
+        if isinstance(v, Iterable):
+            if isinstance(v, dict):
+                v = v.values()
+            if sum_secondary:
+                v = sum(v)
+            else:
+                v = max(v)
+        if isinstance(v, (int, float)):
+            if max_value is None:
+                max_value = v
+            elif v > max_value:
+                max_value = v
+        else:
+            raise TypeError(v)
+    return max_value
