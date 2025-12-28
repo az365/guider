@@ -25,7 +25,7 @@ ROW_STYLE = Style(
     overflow_x='hidden', overflow_y='hidden', white_space='nowrap',
 )
 DETAILED_CAPTION_STYLE = Style(
-    text_overflow='ellipsis',
+    text_overflow='ellipsis', white_space='normal',
     line_height=0.8, font_size='0.8em',
 )
 DEFAULT_AXIS_WIDTH = Size1d(75, Unit.Pixel)
@@ -172,8 +172,9 @@ class BarChartViewer(SquareViewer):
             hint=hint,
         )
         caption = SquareView.horizontal(
-            [caption_text, detailed_caption],
+            [caption_text + ' &nbsp;', detailed_caption],
             size=caption_size,
+            style=Style(align_items='center'),
         )
         row = SquareView.horizontal([axis_label, bar, caption], size=row_frame_size, style=ROW_STYLE, hint=hint)
         assert isinstance(row, SquareView)
