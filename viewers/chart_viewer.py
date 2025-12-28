@@ -24,7 +24,11 @@ ROW_STYLE = Style(
     display='inline-block',
     overflow_x='hidden', overflow_y='hidden', white_space='nowrap',
 )
+DETAILED_CAPTION_STYLE = Style(
+    text_overflow='ellipsis',
+)
 DEFAULT_AXIS_WIDTH = Size1d(75, Unit.Pixel)
+DEFAULT_PADDING = Size2d(10, 10, Unit.Pixel)
 
 
 class BarChartViewer(SquareViewer):
@@ -36,7 +40,7 @@ class BarChartViewer(SquareViewer):
             scale_x: Optional[float] = None,
             axis_width: Size1d = DEFAULT_AXIS_WIDTH,
             max_depth: Optional[int] = None,
-            padding: Optional[Size2d] = None,
+            padding: Optional[Size2d] = DEFAULT_PADDING,
     ):
         super().__init__(size=size, style=style, max_depth=max_depth)
         self.axis_width = axis_width
@@ -57,6 +61,8 @@ class BarChartViewer(SquareViewer):
             scale_x: Optional[float] = None,
             bar_style: Style = DEFAULT_BAR_STYLE,
             padding: Optional[Size2d] = None,
+            captions_for_axis: Optional[dict] = None,
+            captions_for_values: Optional[dict] = None,
     ) -> SquareView:
         assert isinstance(obj, dict), TypeError(obj)
         if size is None:
@@ -87,6 +93,8 @@ class BarChartViewer(SquareViewer):
                 row_frame_size=row_frame_size,
                 mark_size=mark_size,
                 bar_style=bar_style,
+                captions_for_axis=captions_for_axis,
+                captions_for_values=captions_for_values,
             )
             bar_chart_view.data.append(row)
         if padding.x or padding.y:
@@ -112,6 +120,8 @@ class BarChartViewer(SquareViewer):
             row_frame_size: Size2d,
             mark_size: Size2d,
             bar_style: Style,
+            captions_for_axis: Optional[dict] = None,
+            captions_for_values: Optional[dict] = None,
     ) -> SquareView:
         bar_frame_size = Size2d(row_frame_size.x - self.axis_width, row_frame_size.y)
         if isinstance(value, (int, float)):
@@ -120,33 +130,50 @@ class BarChartViewer(SquareViewer):
             sum_value = sum(value.values())
         else:
             raise TypeError(value)
-        hint = f'{row_name}: {sum_value}'
         if self.axis_width:
-            caption = str(sum_value)
-            axis_label = SquareView(
-                data=row_name,
-                tag=TagType.Div,
+            caption_text = str(sum_value)
+            if captions_for_axis:
+                detailed_caption_text = captions_for_axis.get(row_name)
+                row_hint = f'{row_name}: {detailed_caption_text}'
+                detailed_caption = SquareView(
+                    detailed_caption_text,
+                    tag=TagType.Paragraph.create(style='font-size=-2;'),
+                    style=DETAILED_CAPTION_STYLE,
+                    hint=detailed_caption_text,
+                )
+            else:
+                row_hint = row_name
+                detailed_caption = None
+            axis_label = SquareView.vertical(
+                data=[row_name, detailed_caption],
                 size=mark_size,
                 style=MARK_STYLE,
-                hint=row_name,
+                hint=row_hint,
             )
             bar_style.display = 'inline-block'
             axis_label.style.display = 'inline-block'
         else:
-            caption = f'{row_name}: {sum_value}'
+            caption_text = f'{row_name}: {sum_value}'
+            detailed_caption = None
             axis_label = None
+        if captions_for_values:
+            hint = f'{row_name}: {sum_value} {captions_for_values.get(row_name)}'
+        else:
+            hint = f'{row_name}: {sum_value}'
         bar_width = sum_value * scale_x
         bar_size = Size2d(bar_width, bar_frame_size.y)
+        caption_size = Size2d(row_frame_size.x - self.axis_width - bar_size.x, bar_frame_size.y)
         bar = SquareView(
-            data=caption,
+            data=[],
             tag=TagType.Span,
             size=bar_size,
             style=bar_style,
             hint=hint,
         )
-        if axis_label:
-            row = SquareView.horizontal([axis_label, bar], size=row_frame_size, style=ROW_STYLE, hint=hint)
-        else:
-            row = bar
+        caption = SquareView.horizontal(
+            [caption_text, detailed_caption],
+            size=caption_size,
+        )
+        row = SquareView.horizontal([axis_label, bar, caption], size=row_frame_size, style=ROW_STYLE, hint=hint)
         assert isinstance(row, SquareView)
         return row
