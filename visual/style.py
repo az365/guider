@@ -1,8 +1,9 @@
 from collections import OrderedDict
-from typing import Optional
+from typing import Optional, Union
 
 from util.functions import get_attr_str
 from abstract.common_abstract import CommonAbstract
+from visual import Size1d
 
 Native = CommonAbstract
 
@@ -16,6 +17,7 @@ class Style(CommonAbstract):
             overflow_x: Optional[str] = None,
             overflow_y: Optional[str] = None,
             text_overflow: Optional[str] = None,
+            text_align: Optional[str] = None,
             white_space: Optional[str] = None,
             scrollbar_width: Optional[str] = None,
             color: Optional[str] = None,
@@ -26,7 +28,8 @@ class Style(CommonAbstract):
             margin: Optional[str] = None,
             padding: Optional[str] = None,
             spacing: Optional[str] = None,
-            text_align: Optional[str] = None,
+            line_height: Union[Size1d, str, float, None] = None,
+            font_size: Union[Size1d, str, None] = None,
     ):
         self.display = display  # размещение элемента: inline, block, inline-block (none, inherit, initial)
         self.flex_direction = flex_direction  # размещение вложенных: row, column
@@ -45,6 +48,8 @@ class Style(CommonAbstract):
         self.margin = margin  # отступ снаружи
         self.padding = padding  # отступ внутри
         self.spacing = spacing  # отступ снаружи
+        self.line_height = line_height
+        self.font_size = font_size
 
     def get_html_style_str(self) -> str:
         style_dict = self._get_html_style_dict()

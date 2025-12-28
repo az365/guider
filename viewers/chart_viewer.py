@@ -26,6 +26,7 @@ ROW_STYLE = Style(
 )
 DETAILED_CAPTION_STYLE = Style(
     text_overflow='ellipsis',
+    line_height=0.8, font_size='0.8em',
 )
 DEFAULT_AXIS_WIDTH = Size1d(75, Unit.Pixel)
 DEFAULT_PADDING = Size2d(10, 10, Unit.Pixel)
