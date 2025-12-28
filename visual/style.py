@@ -11,6 +11,8 @@ class Style(CommonAbstract):
     def __init__(
             self,
             display: Optional[str] = None,
+            flex_direction: Optional[str] = None,
+            flex_wrap: Optional[str] = None,
             overflow_x: Optional[str] = None,
             overflow_y: Optional[str] = None,
             text_overflow: Optional[str] = None,
@@ -27,6 +29,8 @@ class Style(CommonAbstract):
             text_align: Optional[str] = None,
     ):
         self.display = display  # размещение элемента: inline, block, inline-block (none, inherit, initial)
+        self.flex_direction = flex_direction  # размещение вложенных: row, column
+        self.flex_wrap = flex_wrap  # перенос вложенных: wrap, nowrap
         self.overflow_x = overflow_x  # поведение при переполнении: visible, hidden, scroll, auto
         self.overflow_y = overflow_y  # поведение при переполнении: visible, hidden, scroll, auto
         self.text_overflow = text_overflow  # обрезка текста: clip, ellipsis

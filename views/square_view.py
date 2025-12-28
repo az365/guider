@@ -22,10 +22,33 @@ class SquareView(FormattedView):
         self.style = style or Style()
         self.hint = hint
 
-    def get_html_lines(self) -> Iterable[str]:
-        yield self.get_html_open_tag()
-        yield from super().get_html_lines()
-        yield self.get_html_close_tag()
+    @classmethod
+    def horizontal(
+            cls,
+            data: Iterable,
+            size: Size2d,
+            style: Optional[Style] = None,
+            hint: Optional[str] = None,
+    ) -> Native:
+        style = Style(overflow_x='hidden').modify(style).modify(
+            display='flex', flex_direction='row', flex_wrap='nowrap', white_space='nowrap',
+        )
+        view = cls(data=data, tag=TagType.Div, size=size, style=style, hint=hint)
+        return view
+
+    @classmethod
+    def vertical(
+            cls,
+            data: Iterable,
+            size: Size2d,
+            style: Optional[Style] = None,
+            hint: Optional[str] = None,
+    ) -> Native:
+        style = Style(overflow_y='hidden').modify(style).modify(
+            display='flex', flex_direction='column', flex_wrap='nowrap', white_space='normal',
+        )
+        view = cls(data=data, tag=TagType.Div, size=size, style=style, hint=hint)
+        return view
 
     def get_html_open_tag(self) -> str:
         style = self.get_html_style_str()

@@ -62,7 +62,7 @@ class BarChartViewer(SquareViewer):
             style = self.style
         if scale_x is None:
             scale_x = self.scale_x
-        bar_chart_view = SquareView([], size=size, style=style)
+        bar_chart_view = SquareView.vertical([], size=size, style=style)
         bars_count = len(obj)
         row_height = size.y / bars_count
         row_frame_size = Size2d(size.x, row_height)
@@ -126,7 +126,7 @@ class BarChartViewer(SquareViewer):
             hint=hint,
         )
         if axis_label:
-            row = SquareView([axis_label, bar], size=row_frame_size, style=ROW_STYLE, hint=hint)
+            row = SquareView.horizontal([axis_label, bar], size=row_frame_size, style=ROW_STYLE, hint=hint)
         else:
             row = bar
         assert isinstance(row, SquareView)
