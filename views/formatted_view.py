@@ -30,7 +30,7 @@ class FormattedView(TextView):
 
     def get_html_lines(self) -> Iterable[str]:
         if self.tag:
-            open_tag, close_tag = self.tag.get_html_open_tag(), self.tag.get_html_close_tag()
+            open_tag, close_tag = self.get_html_open_tag(), self.get_html_close_tag()
             indent = INDENT
         else:
             open_tag, close_tag, indent = '', '', ''
@@ -112,6 +112,12 @@ class FormattedView(TextView):
             else:
                 raise TypeError(repr(i))
 
+    def get_html_open_tag(self) -> str:
+        return self.tag.get_html_open_tag()
+
+    def get_html_close_tag(self) -> str:
+        return self.tag.get_html_close_tag()
+
     def show(self):
         if HTML:
             layout = HTML('\n'.join(self.get_html_lines()))
@@ -123,7 +129,6 @@ class FormattedView(TextView):
         return len(self.get_data())
 
     def _repr_html_(self):
-        # return HTML('\n'.join(self.get_html_lines()))
         return '\n'.join(self.get_html_lines())
 
     def _repr_markdown_(self):

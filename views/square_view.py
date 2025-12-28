@@ -21,13 +21,15 @@ class SquareView(FormattedView):
     def get_html_open_tag(self) -> str:
         style = self.get_html_style_str()
         title = self.get_html_title()
+        tag_name = self.tag.get_tag_name()
         if title:
-            return f'<div style="{style}" title="{title}">'
+            return f'<{tag_name} style="{style}" title="{title}">'
         else:
-            return f'<div style="{style}">'
+            return f'<{tag_name} style="{style}">'
 
     def get_html_close_tag(self) -> str:
-        return '</div>'
+        tag_name = self.tag.get_tag_name()
+        return f'</{tag_name}>'
 
     def get_html_width(self) -> Optional[str]:
         return self.size.get_html_width()
