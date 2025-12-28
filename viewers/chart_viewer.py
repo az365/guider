@@ -36,11 +36,13 @@ class BarChartViewer(SquareViewer):
             scale_x: Optional[float] = None,
             axis_width: Size1d = DEFAULT_AXIS_WIDTH,
             max_depth: Optional[int] = None,
+            padding: Optional[Size2d] = None,
     ):
         super().__init__(size=size, style=style, max_depth=max_depth)
         self.axis_width = axis_width
         self.bar_style = bar_style
         self.scale_x = scale_x
+        self.padding = padding or Size2d(0, 0)
 
     def get_view(
             self,
@@ -53,23 +55,27 @@ class BarChartViewer(SquareViewer):
             tag: Optional[TagType] = None,
             ordered: Optional[bool] = False,
             scale_x: Optional[float] = None,
-            bar_style: Style = DEFAULT_BAR_STYLE
+            bar_style: Style = DEFAULT_BAR_STYLE,
+            padding: Optional[Size2d] = None,
     ) -> SquareView:
-        assert isinstance(obj, dict)
+        assert isinstance(obj, dict), TypeError(obj)
         if size is None:
             size = self.size
         if style is None:
             style = self.style
         if scale_x is None:
             scale_x = self.scale_x
-        bar_chart_view = SquareView.vertical([], size=size, style=style)
+        if padding is None:
+            padding = self.padding
+        chart_size = size - padding * 2
+        bar_chart_view = SquareView.vertical([], size=chart_size, style=style)
         bars_count = len(obj)
         row_height = size.y / bars_count
-        row_frame_size = Size2d(size.x, row_height)
+        row_frame_size = Size2d(chart_size.x, row_height)
         bar_frame_size = Size2d(row_frame_size.x - self.axis_width, row_height)
         mark_size = Size2d(self.axis_width, row_height)
         if scale_x is None:
-            max_value = get_max_value(obj)
+            max_value = get_max_value(obj, sum_secondary=True)
             max_value_rounded = smart_round(max_value, upper=True)
             scale_x = bar_frame_size.x / max_value_rounded
             scale_x = int(scale_x.numeric)
@@ -83,6 +89,19 @@ class BarChartViewer(SquareViewer):
                 bar_style=bar_style,
             )
             bar_chart_view.data.append(row)
+        if padding.x or padding.y:
+            padding_y = SquareView([], TagType.Div, size=Size2d(size.x, padding.y))
+            padding_x = SquareView([], TagType.Div, size=Size2d(padding.x, chart_size.y))
+            chart_row_view = SquareView.horizontal(
+                data=[padding_x, bar_chart_view, padding_x],
+                size=Size2d(size.x, chart_size.y),
+            )
+            bar_chart_view = SquareView.vertical(
+                data=[padding_y, chart_row_view, padding_y],
+                size=size,
+                style=style,
+            )
+        assert isinstance(bar_chart_view, SquareView)
         return bar_chart_view
 
     def _get_bar_row(
