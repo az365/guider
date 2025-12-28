@@ -3,13 +3,22 @@ from typing import Optional, Iterable, Union
 
 from visual.size import Size2d
 from visual.style import Style
-from views.formatted_view import FormattedView
+from views.formatted_view import FormattedView, Tag, TagType
+
+Native = FormattedView
 
 
 class SquareView(FormattedView):
-    def __init__(self, data: Iterable, tag, size: Size2d, style: Optional[Style], hint: Optional[str]):
+    def __init__(
+            self,
+            data: Iterable,
+            tag: Tag = TagType.Div,
+            size: Optional[Size2d] = None,
+            style: Optional[Style] = None,
+            hint: Optional[str] = None,
+    ):
         super().__init__(data, tag)
-        self.size = size
+        self.size = size or Size2d(x=None, y=None)
         self.style = style or Style()
         self.hint = hint
 
