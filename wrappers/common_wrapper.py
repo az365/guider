@@ -4,15 +4,16 @@ from collections import OrderedDict
 from util.const import PATH_DELIMITER
 from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
 from util.functions import get_id, get_array_str, remove_empty_values_from_dict, crop, get_hint, get_repr
+from abstract.common_abstract import CommonAbstract
 from wrappers.wrapper_interface import WrapperInterface
 from viewers.viewer_interface import ViewerInterface
 
-Native = WrapperInterface
+Native = Union[CommonAbstract, WrapperInterface]
 
 DEFAULT_PROPS = 'class', 'path'
 
 
-class CommonWrapper(WrapperInterface):
+class CommonWrapper(CommonAbstract, WrapperInterface):
     _default_viewer = None
 
     def __init__(self, obj, path: Optional[list] = None, root: Optional[WrapperInterface] = None):
@@ -367,9 +368,6 @@ class CommonWrapper(WrapperInterface):
         cls = self.__class__.__name__
         obj = self.get_raw_object()
         return f'{cls}({obj})'
-
-    def __repr__(self):
-        return self.get_repr()
 
     def __eq__(self, other):
         raw_self = self.get_raw_object()

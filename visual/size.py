@@ -4,13 +4,15 @@ from typing import Optional, Union, Callable
 
 from util.const import DEFAULT_FONT_SIZE, DEFAULT_FONT_PROPORTION
 from util.types import Numeric, NUMERIC
-from util.functions import get_attr_str, get_repr
+from abstract.common_abstract import CommonAbstract
 from visual.unit import Unit
+
+Native = CommonAbstract
 
 DEFAULT_UNIT = Unit.Pixel
 
 
-class AbstractSize(ABC):
+class AbstractSize(CommonAbstract, ABC):
     def __init__(
             self,
             unit: Unit = DEFAULT_UNIT,
@@ -186,8 +188,7 @@ class Size1d(AbstractSize):
 
     def __mul__(self, other):
         if isinstance(other, (int, float)):
-            x = self.numeric * other
-            return Size1d(x, unit=self.unit, **self._get_font_kwargs())
+            return self.modify(x=self.numeric*other)
         elif isinstance(other, Size1d):
             return Size2d(self.size, other.size, **self._get_font_kwargs())
         else:

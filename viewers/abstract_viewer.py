@@ -1,9 +1,9 @@
-from util.functions import get_repr
+from abstract.common_abstract import CommonAbstract
 from viewers.viewer_interface import ViewerInterface
 from wrappers.common_wrapper import CommonWrapper
 
 
-class AbstractViewer(ViewerInterface):
+class AbstractViewer(CommonAbstract, ViewerInterface):
     def __init__(self):
         pass
 
@@ -21,9 +21,3 @@ class AbstractViewer(ViewerInterface):
             return obj.get_data()
         else:
             return obj
-
-    def __repr__(self):
-        return get_repr(self)
-
-    def __str__(self):
-        return self.__repr__()

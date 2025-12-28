@@ -1,7 +1,8 @@
 from util.functions import get_repr
+from abstract.common_abstract import CommonAbstract
 
 
-class AbstractView:
+class AbstractView(CommonAbstract):
     def __init__(self, data):
         self._data = None
         self.set_data(data)
@@ -18,11 +19,8 @@ class AbstractView:
         obj_repr = get_repr(self.get_data())
         return f'({obj_repr})'
 
-    def __repr__(self):
-        return self.get_repr()
-
     def __str__(self):
-        return str(self._data)
+        return str(self.get_data())
 
     def __iter__(self):
         yield from self.get_data()

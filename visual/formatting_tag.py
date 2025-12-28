@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 from util.functions import get_attr_str
+from abstract.common_abstract import CommonAbstract
 from visual.tag_type import TagType
 
 HTML_ATTR_MAPPING = dict(id='name', title='hint', href='url')
 
 
-class AbstractFormattingTag(ABC):
+class AbstractFormattingTag(CommonAbstract, ABC):
     def __init__(self, name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None):
         self.name = name
         self.hint = hint
