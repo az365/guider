@@ -211,6 +211,9 @@ class Size1d(AbstractSize):
             x = round(self._x, n)
         return Size1d(x, unit=self.unit, **self._get_font_kwargs())
 
+    def __bool__(self):
+        return self.numeric > 0
+
     def __str__(self):
         if self.numeric is None:
             return ''
@@ -386,6 +389,12 @@ class Size2d(AbstractSize):
         assert isinstance(other, Size2d)
         return self.__add__(-other)
 
+    def __mul__(self, other):
+        assert isinstance(other, (int, float)), TypeError(other)
+        x = self.x * other
+        y = self.y * other
+        return self.modify(x=x, y=y)
+
     def __truediv__(self, other):
         if isinstance(other, NUMERIC):
             is_horizontal = self.x > self.y
@@ -412,6 +421,9 @@ class Size2d(AbstractSize):
             x = round(self._x, n)
             y = round(self._y, n)
         return Size2d(x, y, unit=self.unit, **self._get_font_kwargs())
+
+    def __bool__(self):
+        return bool(self.x) and bool(self.y)
 
     def __str__(self):
         x = '-' if self.x_numeric is None else self.x_numeric

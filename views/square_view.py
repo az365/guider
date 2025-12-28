@@ -51,3 +51,6 @@ class SquareView(FormattedView):
         if self.get_html_height():
             style['height'] = self.get_html_height()
         return style
+
+    def __bool__(self):
+        return bool(self.size)
