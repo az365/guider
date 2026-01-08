@@ -39,7 +39,7 @@ class TestSmartRound(unittest.TestCase):
 class TestRemoveRedundantSpacing(unittest.TestCase):
     def test_remove_redundant_spacing(self):
         text = 'a  b\n\nc'
-        expected = 'a b\nc'
+        expected = 'a  b\nc'
         received = remove_redundant_spacing(text)
         self.assertEqual(expected, received)
 

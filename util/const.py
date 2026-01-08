@@ -13,6 +13,5 @@ DEFAULT_FONT_SIZE = 16
 DEFAULT_FONT_PROPORTION = 0.6
 
 REDUNDANT_SPACING = {
-    '  ': ' ',
     '\n\n': '\n',
 }

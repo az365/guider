@@ -107,7 +107,7 @@ class FormattedView(TextView):
             elif isinstance(i, FormattedView) or hasattr(i, 'get_html_lines'):
                 yield from i.get_html_lines()
             elif isinstance(i, TextView):
-                for line in self.get_text_lines():
+                for line in i.get_text_lines():
                     yield f'{line}<br>'
             else:
                 raise TypeError(repr(i))
