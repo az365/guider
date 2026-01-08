@@ -1,7 +1,7 @@
 from typing import Iterable, Sized
 from collections import OrderedDict
 
-from util.const import DEFAULT_LINE_LEN
+from util.const import DEFAULT_LINE_LEN, REDUNDANT_SPACING
 from util.types import PRIMITIVES
 
 
@@ -29,6 +29,13 @@ def remove_empty_values_from_dict(input_dict: dict, inplace: bool = False) -> di
             if not is_empty(v):
                 output_dict[k] = v
         return output_dict
+
+
+def remove_redundant_spacing(text: str) -> str:
+    for double, single in REDUNDANT_SPACING.items():
+        while double in text:
+            text = text.replace(double, single)
+    return text
 
 
 def get_id(obj):

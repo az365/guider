@@ -1,6 +1,6 @@
 import unittest
 
-from util.functions import get_max_value, smart_round
+from util.functions import get_max_value, smart_round, remove_redundant_spacing
 from examples.stats.data_for_charts import simple_funnel_data, rich_funnel_data
 
 
@@ -33,6 +33,14 @@ class TestSmartRound(unittest.TestCase):
         number = 12345
         expected = 13000
         received = smart_round(number, upper=True)
+        self.assertEqual(expected, received)
+
+
+class TestRemoveRedundantSpacing(unittest.TestCase):
+    def test_remove_redundant_spacing(self):
+        text = 'a  b\n\nc'
+        expected = 'a b\nc'
+        received = remove_redundant_spacing(text)
         self.assertEqual(expected, received)
 
 

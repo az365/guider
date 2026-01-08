@@ -3,6 +3,7 @@ from typing import Optional, Iterable, Union
 from util.ext import HTML, display
 from util.const import INDENT
 from util.types import PRIMITIVES
+from util.functions import remove_redundant_spacing
 from visual import TagType, AbstractFormattingTag
 from views.text_view import TextView
 
@@ -48,8 +49,7 @@ class FormattedView(TextView):
 
     def get_text_lines(self) -> Iterable[str]:
         one_line = ''.join(self._get_text_parts())
-        one_line = one_line.replace('\n\n\n', '\n')
-        one_line = one_line.replace('\n\n', '\n')
+        one_line = remove_redundant_spacing(one_line)
         yield from one_line.split('\n')
 
     def _get_text_parts(self) -> Iterable[str]:
