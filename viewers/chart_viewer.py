@@ -1,5 +1,6 @@
 from typing import Optional, Tuple, Union
 
+from util.const import HTML_NB_SPACE
 from util.functions import get_max_value, smart_round
 from views.formatted_view import FormattedView
 from visual import Style, Unit, Size1d, Size2d, TagType
@@ -172,7 +173,7 @@ class BarChartViewer(SquareViewer):
             hint=hint,
         )
         caption = SquareView.horizontal(
-            [caption_text + ' &nbsp;', detailed_caption],
+            [f'{caption_text} {HTML_NB_SPACE}', detailed_caption],
             size=caption_size,
             style=Style(align_items='center'),
         )
