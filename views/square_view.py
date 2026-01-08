@@ -26,7 +26,7 @@ class SquareView(FormattedView):
     def horizontal(
             cls,
             data: Iterable,
-            size: Size2d,
+            size: Optional[Size2d] = None,
             style: Optional[Style] = None,
             hint: Optional[str] = None,
     ) -> Native:
@@ -40,7 +40,7 @@ class SquareView(FormattedView):
     def vertical(
             cls,
             data: Iterable,
-            size: Size2d,
+            size: Optional[Size2d] = None,
             style: Optional[Style] = None,
             hint: Optional[str] = None,
     ) -> Native:
@@ -51,13 +51,8 @@ class SquareView(FormattedView):
         return view
 
     def get_html_open_tag(self) -> str:
-        style = self.get_html_style_str()
-        title = self.get_html_title()
-        tag_name = self.tag.get_tag_name()
-        if title:
-            return f'<{tag_name} style="{style}" title="{title}">'
-        else:
-            return f'<{tag_name} style="{style}">'
+        html_style = self.get_html_style_str()
+        return self.tag.get_html_open_tag(style=html_style, title=self.hint)
 
     def get_html_close_tag(self) -> str:
         tag_name = self.tag.get_tag_name()

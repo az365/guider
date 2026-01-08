@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 from typing import Optional, Union
 
 from util.functions import get_attr_str
@@ -26,9 +27,9 @@ class AbstractFormattingTag(CommonAbstract, ABC):
     def get_tag_name(self) -> str:
         return self.get_tag_type().value
 
-    def get_html_open_tag(self) -> str:
+    def get_html_open_tag(self, **add_attributes) -> str:
         tag_name = self.get_tag_name()
-        attributes = self.get_html_attributes_str()
+        attributes = self.get_html_attributes_str(add=add_attributes)
         if attributes:
             return f'<{tag_name} {attributes}>'
         else:
@@ -38,8 +39,13 @@ class AbstractFormattingTag(CommonAbstract, ABC):
         tag_name = self.get_tag_name()
         return f'</{tag_name}>'
 
-    def get_attributes(self, filled_only: bool = True, exclude: Optional[list] = None) -> dict:
-        attributes = dict()
+    def get_attributes(
+            self,
+            filled_only: bool = True,
+            exclude: Optional[list] = None,
+            add: Optional[dict] = None,
+    ) -> dict:
+        attributes = OrderedDict()
         for k, v in vars(self).items():
             take = True
             if filled_only:
@@ -48,11 +54,14 @@ class AbstractFormattingTag(CommonAbstract, ABC):
                 take = take and k not in exclude
             if take:
                 attributes[k] = v
+        if add:
+            for k, v in add.items():
+                attributes[k] = v
         return attributes
 
-    def get_html_attributes_str(self) -> str:
+    def get_html_attributes_str(self, add: Optional[dict] = None) -> str:
         excluding = self._get_html_excluded_attributes()
-        attributes = self.get_attributes(filled_only=True, exclude=excluding)
+        attributes = self.get_attributes(filled_only=True, exclude=excluding, add=add)
         for html_name, default_name in HTML_ATTR_MAPPING.items():
             if default_name in attributes:
                 value = attributes.pop(default_name)
@@ -247,10 +256,10 @@ class Font(AbstractFormattingTag):
     def get_tag_type(self) -> TagType:
         return TagType.Font
 
-    def get_html_open_tag(self) -> str:
+    def get_html_open_tag(self, **add_attributes) -> str:
         tag = ''
-        if self._need_font_tag():
-            attributes = self.get_html_attributes_str()
+        if self._need_font_tag() or add_attributes:
+            attributes = self.get_html_attributes_str(add=add_attributes)
             tag += f'<font {attributes}>'
         if self.bold:
             tag += '<b>'
