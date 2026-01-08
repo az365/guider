@@ -20,6 +20,10 @@ class AbstractFormattingTag(CommonAbstract, ABC):
     def get_tag_type(self) -> TagType:
         pass
 
+    def _get_html_title(self) -> Optional[str]:
+        if self.hint:
+            return self.hint.replace('"', '``')
+
     @classmethod
     def _get_html_excluded_attributes(cls) -> list:
         return list()
@@ -52,6 +56,8 @@ class AbstractFormattingTag(CommonAbstract, ABC):
                 take = take and v is not None
             if exclude:
                 take = take and k not in exclude
+            if k == 'hint':
+                v = self._get_html_title()
             if take:
                 attributes[k] = v
         if add:

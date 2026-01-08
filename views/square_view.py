@@ -7,20 +7,22 @@ from views.formatted_view import FormattedView, Tag, TagType
 
 Native = FormattedView
 
+DEFAULT_TAG_TYPE = TagType.Div
+
 
 class SquareView(FormattedView):
     def __init__(
             self,
             data: Iterable,
-            tag: Tag = TagType.Div,
+            tag: Tag = DEFAULT_TAG_TYPE,
             size: Optional[Size2d] = None,
             style: Optional[Style] = None,
             hint: Optional[str] = None,
     ):
-        super().__init__(data, tag)
+        super().__init__(data, tag or DEFAULT_TAG_TYPE)
         self.size = size or Size2d(x=None, y=None)
         self.style = style or Style()
-        self.hint = hint
+        self.set_hint(hint)
 
     @classmethod
     def horizontal(
@@ -50,9 +52,17 @@ class SquareView(FormattedView):
         view = cls(data=data, tag=TagType.Div, size=size, style=style, hint=hint)
         return view
 
+    def get_hint(self) -> Optional[str]:
+        return self.tag.hint
+
+    def set_hint(self, text: Optional[str]):
+        self.tag.hint = text
+
+    hint = property(get_hint, set_hint)
+
     def get_html_open_tag(self) -> str:
         html_style = self.get_html_style_str()
-        return self.tag.get_html_open_tag(style=html_style, title=self.hint)
+        return self.tag.get_html_open_tag(style=html_style)
 
     def get_html_close_tag(self) -> str:
         tag_name = self.tag.get_tag_name()
@@ -63,10 +73,6 @@ class SquareView(FormattedView):
 
     def get_html_height(self) -> Optional[str]:
         return self.size.get_html_height()
-
-    def get_html_title(self) -> Optional[str]:
-        if self.hint:
-            return self.hint.replace('"', '``')
 
     def get_html_style_str(self) -> str:
         style_dict = self._get_html_style_dict()
