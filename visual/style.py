@@ -23,7 +23,6 @@ class Style(CommonAbstract):
             scrollbar_width: Optional[str] = None,
             color: Optional[str] = None,
             background: Optional[str] = None,
-            # background_color: Optional[str] = None,
             border: Optional[str] = None,
             border_radius: Optional[str] = None,
             margin: Optional[str] = None,
@@ -44,7 +43,6 @@ class Style(CommonAbstract):
         self.scrollbar_width = scrollbar_width  # полоса прокрутки: auto, thin, none
         self.color = color  # цвет шрифта
         self.background = background  # фон: image, size, repeat, height
-        # self.background_color = background_color
         self.border = border  # граница: width, color, radius
         self.border_radius = border_radius  # граница: width, color, radius
         self.margin = margin  # отступ снаружи
@@ -53,12 +51,12 @@ class Style(CommonAbstract):
         self.line_height = line_height
         self.font_size = font_size
 
-    def get_html_style_str(self) -> str:
-        style_dict = self._get_html_style_dict()
+    def get_html_str(self) -> str:
+        style_dict = self.get_html_dict()
         style_args = [f'{k}: {v};' for k, v in style_dict.items()]
         return ' '.join(style_args)
 
-    def _get_html_style_dict(self) -> OrderedDict:
+    def get_html_dict(self) -> OrderedDict:
         style = OrderedDict()
         for k, v in self._get_init_kwargs().items():
             if v is not None:
@@ -77,8 +75,8 @@ class Style(CommonAbstract):
 
     def __repr__(self):
         cls = self.__class__.__name__
-        attr = get_attr_str(self._get_html_style_dict())
+        attr = get_attr_str(self.get_html_dict())
         return f'{cls}({attr})'
 
     def __str__(self):
-        return self.get_html_style_str()
+        return self.get_html_str()

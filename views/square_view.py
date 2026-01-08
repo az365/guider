@@ -79,7 +79,7 @@ class SquareView(FormattedView):
         return ' '.join(style_args)
 
     def _get_html_style_dict(self) -> Union[OrderedDict, dict]:
-        style = self.style._get_html_style_dict()
+        style = self.style.get_html_dict()
         if self.get_html_width():
             style['width'] = self.get_html_width()
         if self.get_html_height():
