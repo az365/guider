@@ -92,7 +92,7 @@ class FormattedView(TextView):
             elif isinstance(i, TextView):
                 yield from i.get_text_lines()
             else:
-                raise TypeError(i)
+                yield str(i)
         if self.tag:
             yield self.tag.get_md_close_tag()
 

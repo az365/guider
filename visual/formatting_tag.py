@@ -4,12 +4,13 @@ from typing import Optional, Union
 from util.functions import get_attr_str
 from abstract.common_abstract import CommonAbstract
 from visual.tag_type import TagType
+from visual.style import Style
 
 HTML_ATTR_MAPPING = dict(id='name', title='hint', href='url')
 
 
 class AbstractFormattingTag(CommonAbstract, ABC):
-    def __init__(self, name: Optional[str] = None, hint: Optional[str] = None, style: Optional[str] = None):
+    def __init__(self, name: Optional[str] = None, hint: Optional[str] = None, style: Optional[Style] = None):
         self.name = name
         self.hint = hint
         self.style = style
@@ -54,7 +55,10 @@ class AbstractFormattingTag(CommonAbstract, ABC):
         attributes = self.get_attributes(filled_only=True, exclude=excluding)
         for html_name, default_name in HTML_ATTR_MAPPING.items():
             if default_name in attributes:
-                attributes[html_name] = attributes.pop(default_name)
+                value = attributes.pop(default_name)
+                if isinstance(value, Style) or hasattr(value, 'get_html_str'):
+                    value = value.get_html_str()
+                attributes[html_name] = value
         return get_attr_str(attributes, delimiter=' ', quote='"')
 
     @abstractmethod
