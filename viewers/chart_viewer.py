@@ -1,6 +1,7 @@
 from typing import Optional, Tuple, Union
 
 from util.const import HTML_NB_SPACE
+from util.types import Numeric, NUMERIC
 from util.functions import get_max_value, smart_round
 from views.formatted_view import FormattedView
 from visual import Style, Unit, Size1d, Size2d, TagType
@@ -39,7 +40,7 @@ class BarChartViewer(SquareViewer):
             size: Union[Size2d, Tuple[float, float]] = DEFAULT_CHART_SIZE,
             style: Optional[Style] = DEFAULT_CHART_STYLE,
             bar_style: str = DEFAULT_BAR_STYLE,
-            scale_x: Optional[float] = None,
+            scale_x: Optional[Size1d] = None,
             axis_width: Size1d = DEFAULT_AXIS_WIDTH,
             max_depth: Optional[int] = None,
             padding: Optional[Size2d] = DEFAULT_PADDING,
@@ -60,7 +61,7 @@ class BarChartViewer(SquareViewer):
             prefix: Optional[FormattedView] = None,
             tag: Optional[TagType] = None,
             ordered: Optional[bool] = False,
-            scale_x: Optional[float] = None,
+            scale_x: Optional[Size1d] = None,
             bar_style: Style = DEFAULT_BAR_STYLE,
             padding: Optional[Size2d] = None,
             captions_for_axis: Optional[dict] = None,
@@ -86,7 +87,7 @@ class BarChartViewer(SquareViewer):
             max_value = get_max_value(obj, sum_secondary=True)
             max_value_rounded = smart_round(max_value, upper=True)
             scale_x = bar_frame_size.x / max_value_rounded
-            scale_x = int(scale_x.numeric)
+            scale_x.numeric = int(scale_x.numeric)
         for k, v in obj.items():
             row = self._get_bar_row(
                 row_name=k,
@@ -117,8 +118,8 @@ class BarChartViewer(SquareViewer):
     def _get_bar_row(
             self,
             row_name: str,
-            value: Union[float, dict],
-            scale_x: float,
+            value: Union[Numeric, dict],
+            scale_x: Size1d,
             row_frame_size: Size2d,
             mark_size: Size2d,
             bar_style: Style,
@@ -126,7 +127,7 @@ class BarChartViewer(SquareViewer):
             captions_for_values: Optional[dict] = None,
     ) -> SquareView:
         bar_frame_size = Size2d(row_frame_size.x - self.axis_width, row_frame_size.y)
-        if isinstance(value, (int, float)):
+        if isinstance(value, NUMERIC):
             sum_value = value
         elif isinstance(value, dict):
             sum_value = sum(value.values())
@@ -162,7 +163,7 @@ class BarChartViewer(SquareViewer):
             hint = f'{row_name}: {sum_value} {captions_for_values.get(row_name)}'
         else:
             hint = f'{row_name}: {sum_value}'
-        bar_width = sum_value * scale_x
+        bar_width = scale_x * sum_value
         bar_size = Size2d(bar_width, bar_frame_size.y)
         caption_size = Size2d(row_frame_size.x - self.axis_width - bar_size.x, bar_frame_size.y)
         bar = SquareView(

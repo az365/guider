@@ -145,7 +145,11 @@ class Size1d(AbstractSize):
             x = self.get_for_units(Unit.Char).numeric
             return round(x, round_factor)
 
-    def _compare(self, other: AbstractSize, cmp: Callable):
+    def _compare(self, other: SizeOrNumeric, cmp: Callable):
+        if isinstance(other, NUMERIC):
+            other = self.modified(x=other)
+        elif isinstance(other, str):
+            other = Size1d(other)
         assert isinstance(other, Size1d), TypeError(other)
         if self.unit == other.unit:
             a = self.numeric
