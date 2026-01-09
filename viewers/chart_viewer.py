@@ -1,4 +1,6 @@
 from typing import Optional, Tuple, Union
+from collections import OrderedDict
+from binascii import crc32
 
 from util.const import HTML_NB_SPACE, HTML_NEW_LINE
 from util.types import Numeric, NUMERIC
@@ -11,6 +13,7 @@ from viewers.square_viewer import SquareViewer
 
 DEFAULT_CHART_COLOR = 'grey'
 DEFAULT_BAR_COLOR = 'silver'
+DETAILED_CAPTION_COLOR = '#46484F'
 DEFAULT_CHART_SIZE = Size2d(480, 270, Unit.Pixel)
 DEFAULT_CHART_STYLE = Style(background=DEFAULT_CHART_COLOR)
 DEFAULT_BAR_STYLE = Style(
@@ -27,6 +30,7 @@ ROW_STYLE = Style(
     overflow_x='hidden', overflow_y='hidden', white_space='nowrap',
 )
 DETAILED_CAPTION_STYLE = Style(
+    color=DETAILED_CAPTION_COLOR,
     text_overflow='ellipsis', white_space='normal',
     line_height=0.8, font_size='0.8em',
 )
@@ -125,6 +129,7 @@ class BarChartViewer(SquareViewer):
             bar_style: Style,
             captions_for_axis: Optional[dict] = None,
             captions_for_values: Optional[dict] = None,
+            colors: Optional[dict] = None,
     ) -> SquareView:
         bar_frame_size = Size2d(row_frame_size.x - self.axis_width, row_frame_size.y)
         if isinstance(value, NUMERIC):
@@ -147,10 +152,18 @@ class BarChartViewer(SquareViewer):
             hint = f'{row_name}: {sum_value} {captions_for_values.get(row_name)}'
         else:
             hint = f'{row_name}: {sum_value}'
-        bar = self._get_single_bar(
-            sum_value, scale_x=scale_x, bar_frame_size=bar_frame_size,
-            bar_style=bar_style, caption=caption_text, hint=hint,
-        )
+        if isinstance(value, NUMERIC):
+            bar = self._get_single_bar(
+                value, scale_x=scale_x, bar_frame_size=bar_frame_size,
+                bar_style=bar_style, caption=caption_text, hint=hint,
+            )
+        elif isinstance(value, dict):
+            bar = self._get_multiple_bar(
+                value, scale_x=scale_x, frame_size=bar_frame_size,
+                style=bar_style, colors=colors, captions=captions_for_values, hint=hint,
+            )
+        else:
+            raise TypeError(value)
         caption_size = Size2d(row_frame_size.x - self.axis_width - bar.size.x, bar_frame_size.y)
         caption = SquareView.horizontal(
             [f'{caption_text} {HTML_NB_SPACE}', detailed_caption],
@@ -182,6 +195,49 @@ class BarChartViewer(SquareViewer):
             hint=hint,
         )
         return bar
+
+    @classmethod
+    def _get_multiple_bar(
+            cls,
+            values: OrderedDict,
+            scale_x: Size1d,
+            frame_size: Size2d,
+            style: Style,
+            colors: Optional[dict],
+            captions: Optional[dict] = None,
+            hint: Optional[str] = None,
+    ) -> SquareView:
+        sub_bars = list()
+        for k, v in values.items():
+            color = colors.get(k) if colors else None
+            if color is None:
+                color = cls._get_default_color_for_category(k)
+            cur_style = style.modified(background=color)
+            cur_caption = captions.get(k, k) if captions else k
+            cur_caption = f'{v} {cur_caption}'
+            cur_hint = f'{v}{HTML_NEW_LINE}{cur_caption}{HTML_NEW_LINE}{hint}'
+            cur_bar = cls._get_single_bar(
+                value=v,
+                scale_x=scale_x,
+                bar_frame_size=frame_size,
+                bar_style=cur_style,
+                caption=cur_caption,
+                hint=cur_hint,
+            )
+            sub_bars.append(cur_bar)
+        total_size = Size2d(x=scale_x*sum(values.values()), y=frame_size.y)
+        multiple_bar = SquareView.horizontal(
+            sub_bars,
+            size=total_size,
+            style=style,
+            hint=hint,
+        )
+        return multiple_bar
+
+    @staticmethod
+    def _get_default_color_for_category(category: str, salt: str = '%%%') -> str:
+        num = crc32(bytes(salt + category, 'utf-8'))
+        return '#' + hex(num)[-6:]
 
     @classmethod
     def _get_axis_label(
