@@ -20,7 +20,7 @@ class CommonAbstract(ABC):
         init_kwargs = self._get_init_kwargs(skip_none=True)
         return self.__class__(**init_kwargs)
 
-    def modify(self, other: Native = None, **kwargs) -> Native:
+    def modified(self, other: Native = None, **kwargs) -> Native:
         init_kwargs = self._get_init_kwargs(skip_none=True)
         if other:
             assert isinstance(other, self.__class__), TypeError(other)

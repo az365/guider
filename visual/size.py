@@ -188,7 +188,7 @@ class Size1d(AbstractSize):
 
     def __mul__(self, other):
         if isinstance(other, (int, float)):
-            return self.modify(x=self.numeric*other)
+            return self.modified(x=self.numeric*other)
         elif isinstance(other, Size1d):
             return Size2d(self.size, other.size, **self._get_font_kwargs())
         else:
@@ -393,7 +393,7 @@ class Size2d(AbstractSize):
         assert isinstance(other, (int, float)), TypeError(other)
         x = self.x * other
         y = self.y * other
-        return self.modify(x=x, y=y)
+        return self.modified(x=x, y=y)
 
     def __truediv__(self, other):
         if isinstance(other, NUMERIC):

@@ -32,7 +32,7 @@ class SquareView(FormattedView):
             style: Optional[Style] = None,
             hint: Optional[str] = None,
     ) -> Native:
-        style = Style(overflow_x='hidden').modify(style).modify(
+        style = Style(overflow_x='hidden').modified(style).modified(
             display='flex', flex_direction='row', flex_wrap='nowrap', white_space='nowrap',
         )
         view = cls(data=data, tag=TagType.Div, size=size, style=style, hint=hint)
@@ -46,7 +46,7 @@ class SquareView(FormattedView):
             style: Optional[Style] = None,
             hint: Optional[str] = None,
     ) -> Native:
-        style = Style(overflow_y='hidden').modify(style).modify(
+        style = Style(overflow_y='hidden').modified(style).modified(
             display='flex', flex_direction='column', flex_wrap='nowrap', white_space='normal',
         )
         view = cls(data=data, tag=TagType.Div, size=size, style=style, hint=hint)
