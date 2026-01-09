@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, Union
 
-from util.const import HTML_NB_SPACE
+from util.const import HTML_NB_SPACE, HTML_NEW_LINE
 from util.types import Numeric, NUMERIC
 from util.functions import get_max_value, smart_round
 from views.formatted_view import FormattedView
@@ -134,27 +134,11 @@ class BarChartViewer(SquareViewer):
         else:
             raise TypeError(value)
         if self.axis_width:
+            detailed_caption_text = captions_for_axis.get(row_name) if captions_for_axis else None
+            axis_label = self._get_axis_label(row_name, caption_text=detailed_caption_text, mark_size=mark_size)
             caption_text = str(sum_value)
-            if captions_for_axis:
-                detailed_caption_text = captions_for_axis.get(row_name)
-                row_hint = f'{row_name}: {detailed_caption_text}'
-                detailed_caption = SquareView(
-                    detailed_caption_text,
-                    tag=TagType.Paragraph.create(style='font-size=-2;'),
-                    style=DETAILED_CAPTION_STYLE,
-                    hint=detailed_caption_text,
-                )
-            else:
-                row_hint = row_name
-                detailed_caption = None
-            axis_label = SquareView.vertical(
-                data=[row_name, detailed_caption],
-                size=mark_size,
-                style=MARK_STYLE,
-                hint=row_hint,
-            )
+            detailed_caption = self._get_detailed_row_caption(detailed_caption_text or row_name)
             bar_style.display = 'inline-block'
-            axis_label.style.display = 'inline-block'
         else:
             caption_text = f'{row_name}: {sum_value}'
             detailed_caption = None
@@ -163,16 +147,11 @@ class BarChartViewer(SquareViewer):
             hint = f'{row_name}: {sum_value} {captions_for_values.get(row_name)}'
         else:
             hint = f'{row_name}: {sum_value}'
-        bar_width = scale_x * sum_value
-        bar_size = Size2d(bar_width, bar_frame_size.y)
-        caption_size = Size2d(row_frame_size.x - self.axis_width - bar_size.x, bar_frame_size.y)
-        bar = SquareView(
-            data=[],
-            tag=TagType.Span,
-            size=bar_size,
-            style=bar_style,
-            hint=hint,
+        bar = self._get_single_bar(
+            sum_value, scale_x=scale_x, bar_frame_size=bar_frame_size,
+            bar_style=bar_style, caption=caption_text, hint=hint,
         )
+        caption_size = Size2d(row_frame_size.x - self.axis_width - bar.size.x, bar_frame_size.y)
         caption = SquareView.horizontal(
             [f'{caption_text} {HTML_NB_SPACE}', detailed_caption],
             size=caption_size,
@@ -181,3 +160,59 @@ class BarChartViewer(SquareViewer):
         row = SquareView.horizontal([axis_label, bar, caption], size=row_frame_size, style=ROW_STYLE, hint=hint)
         assert isinstance(row, SquareView)
         return row
+
+    @staticmethod
+    def _get_single_bar(
+            value: float,
+            scale_x: Size1d,
+            bar_frame_size: Size2d,
+            bar_style: Style,
+            caption: Optional[str] = None,
+            hint: Optional[str] = None,
+    ) -> SquareView:
+        bar_width = scale_x * value
+        if bar_width > bar_frame_size.x:
+            bar_width = bar_frame_size.x
+        bar_size = Size2d(bar_width, bar_frame_size.y)
+        bar = SquareView(
+            data=[caption],
+            tag=TagType.Div,
+            size=bar_size,
+            style=bar_style,
+            hint=hint,
+        )
+        return bar
+
+    @classmethod
+    def _get_axis_label(
+            cls,
+            row_name: str,
+            caption_text: Optional[str],
+            mark_size: Size2d,
+    ):
+        if caption_text:
+            row_hint = f'{row_name}{HTML_NEW_LINE}{caption_text}'
+            detailed_caption = cls._get_detailed_row_caption(caption_text)
+        else:
+            row_hint = row_name
+            detailed_caption = None
+        axis_label = SquareView.vertical(
+            data=[row_name, detailed_caption],
+            size=mark_size,
+            style=MARK_STYLE,
+            hint=row_hint,
+        )
+        axis_label.style.display = 'inline-block'
+        return axis_label
+
+    @staticmethod
+    def _get_detailed_row_caption(
+            detailed_caption_text,
+    ):
+        caption_view = SquareView(
+            detailed_caption_text,
+            tag=TagType.Paragraph,
+            style=DETAILED_CAPTION_STYLE,
+            hint=detailed_caption_text,
+        )
+        return caption_view
