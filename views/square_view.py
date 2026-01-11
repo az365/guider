@@ -20,7 +20,7 @@ class SquareView(FormattedView):
             hint: Optional[str] = None,
     ):
         super().__init__(data, tag or DEFAULT_TAG_TYPE)
-        self.size = size or Size2d(x=None, y=None)
+        self.size = size if size is not None else Size2d(x=None, y=None)
         self.style = style or Style()
         self.set_hint(hint)
 
