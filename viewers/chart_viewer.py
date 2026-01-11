@@ -37,6 +37,7 @@ DETAILED_CAPTION_STYLE = Style(
     padding='0.2em',
 )
 DEFAULT_AXIS_WIDTH = Size1d(75, Unit.Pixel)
+DEFAULT_REL_BAR_WIDTH = Size1d(150, Unit.Pixel)
 DEFAULT_PADDING = Size2d(10, 10, Unit.Pixel)
 
 
@@ -314,3 +315,91 @@ class BarChartViewer(SquareViewer):
             hint=detailed_caption_text,
         )
         return caption_view
+
+
+class PairBarChartViewer(BarChartViewer):
+    def __init__(
+            self,
+            size: Union[Size2d, Tuple[float, float]] = DEFAULT_CHART_SIZE,
+            style: Optional[Style] = DEFAULT_CHART_STYLE,
+            bar_style: str = DEFAULT_BAR_STYLE,
+            scale_x: Optional[Size1d] = None,
+            axis_width: Size1d = DEFAULT_AXIS_WIDTH,
+            rel_bar_width: Size1d = DEFAULT_REL_BAR_WIDTH,
+            max_depth: Optional[int] = None,
+            padding: Optional[Size2d] = DEFAULT_PADDING,
+    ):
+        super().__init__(
+            size=size, style=style, max_depth=max_depth,
+            bar_style=bar_style, scale_x=scale_x, axis_width=axis_width, padding=padding,
+        )
+        self.rel_bar_width = rel_bar_width
+
+    def get_view(
+            self,
+            obj: dict,
+            include_title: bool = True,
+            size: Optional[Size2d] = None,
+            style: Optional[Style] = None,
+            depth: Optional[int] = None,
+            prefix: Optional[FormattedView] = None,
+            tag: Optional[TagType] = None,
+            ordered: Optional[bool] = False,
+            scale_x: Optional[Size1d] = None,
+            bar_style: Style = DEFAULT_BAR_STYLE,
+            padding: Optional[Size2d] = None,
+            captions_for_axis: Optional[dict] = None,
+            captions_for_values: Optional[dict] = None,
+            axis_width: Optional[Size1d] = None,
+            rel_bar_width: Optional[Size1d] = None,
+    ) -> SquareView:
+        if size is None:
+            size = self.size
+        if axis_width is None:
+            axis_width = self.axis_width
+        if rel_bar_width is None:
+            rel_bar_width = self.rel_bar_width
+        if style is None:
+            style = self.style
+        if scale_x is None:
+            scale_x = self.scale_x
+        if padding is None:
+            padding = self.padding
+        chart_size = size - padding * 2
+        abs_chart_size = Size2d(chart_size.x - rel_bar_width, chart_size.y)
+        rel_chart_size = Size2d(rel_bar_width, chart_size.y)
+        rel_chart_view = self._get_chart_without_padding(
+            self._get_rel_obj(obj), scale_x=rel_bar_width,
+            chart_size=rel_chart_size, axis_width=None,
+            style=style, bar_style=bar_style,
+            captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
+        )
+        abs_chart_view = self._get_chart_without_padding(
+            obj, scale_x=scale_x,
+            chart_size=abs_chart_size, axis_width=axis_width,
+            style=style, bar_style=bar_style,
+            captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
+            mark_style=MARK_STYLE.modified(text_align='center'),
+        )
+        chart_view = SquareView.horizontal(
+            [rel_chart_view, abs_chart_view],
+            size=chart_size,
+            style=style,
+        )
+        chart_view = self._get_chart_with_padding(chart_view, padding=padding)
+        return chart_view
+
+    @staticmethod
+    def _get_rel_obj(obj: OrderedDict[str, dict]) -> OrderedDict[str, dict]:
+        rel_obj = OrderedDict()
+        for bar_name, abs_series in obj.items():
+            rel_series = OrderedDict()
+            if isinstance(abs_series, NUMERIC):
+                abs_series = OrderedDict(total=abs_series)
+            assert isinstance(abs_series, dict), TypeError(abs_series)
+            sum_value = sum(abs_series.values())
+            for cat, abs_value in abs_series.items():
+                rel_value = abs_value / sum_value
+                rel_series[cat] = rel_value
+            rel_obj[bar_name] = rel_series
+        return rel_obj
