@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from typing import Iterable
 
+from util.const import INDENT, MAX_MD_ROW_LEN
 from util.functions import crop
 from wrappers.common_wrapper import CommonWrapper
 from viewers.text_viewer import TextViewer
@@ -15,7 +16,7 @@ class SimpleTextViewer(TextViewer):
         lines = self.get_lines(obj, *args, **kwargs)
         return TextView(lines)
 
-    def get_lines(self, obj, depth=1, indent='  ', max_line_len=80) -> Iterable[str]:
+    def get_lines(self, obj, depth: int = 1, indent: str = INDENT, max_line_len: int = MAX_MD_ROW_LEN) -> Iterable[str]:
         if isinstance(obj, dict):
             for k, v in obj.items():
                 wrapped_v = CommonWrapper(v)
@@ -40,7 +41,7 @@ class SimpleTextViewer(TextViewer):
                 for line in self.get_lines(props, depth=depth-1):
                     yield crop(indent + line, max_line_len)
 
-    def get_blocks(self, obj, depth=1, indent='  ') -> Iterable[list]:
+    def get_blocks(self, obj, depth: int = 1, indent: str = INDENT) -> Iterable[list]:
         for k, v in self.get_content_pairs(obj):
             block_lines = list()
             block_lines.append(k + ':')
