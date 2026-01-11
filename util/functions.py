@@ -1,4 +1,4 @@
-from typing import Iterable, Sized
+from typing import Iterable, Sized, Optional
 from collections import OrderedDict
 
 from util.const import DEFAULT_LINE_LEN, REDUNDANT_SPACING
@@ -159,3 +159,16 @@ def smart_round(n: float, count: int = 2, upper: bool = False) -> float:
     else:
         rounded = round(n, -round_digits)
     return rounded
+
+
+def percentage(num: float, round_digits: Optional[int] = None, smart: bool = False, delimiter: str = '') -> str:
+    num_percent = num * 100
+    if round_digits is not None:
+        if smart:
+            num_percent = smart_round(num_percent, round_digits, upper=False)
+        else:
+            if round_digits:
+                num_percent = round(num_percent, round_digits)
+            if round_digits <= 0:
+                num_percent = int(num_percent)
+    return f'{num_percent}{delimiter}%'

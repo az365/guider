@@ -2,9 +2,9 @@ from typing import Optional, Tuple, Union
 from collections import OrderedDict
 from binascii import crc32
 
-from util.const import HTML_NB_SPACE, HTML_NEW_LINE
+from util.const import HTML_NB_SPACE, HTML_NEW_LINE, HTML_THIN_SPACE
 from util.types import Numeric, NUMERIC
-from util.functions import get_max_value, smart_round
+from util.functions import get_max_value, smart_round, percentage
 from views.formatted_view import FormattedView
 from visual import Style, Unit, Size1d, Size2d, TagType
 from views.square_view import SquareView
@@ -37,7 +37,7 @@ DETAILED_CAPTION_STYLE = Style(
     padding='0.2em',
 )
 DEFAULT_AXIS_WIDTH = Size1d(75, Unit.Pixel)
-DEFAULT_REL_BAR_WIDTH = Size1d(150, Unit.Pixel)
+DEFAULT_REL_BAR_WIDTH = Size1d(100, Unit.Pixel)
 DEFAULT_PADDING = Size2d(10, 10, Unit.Pixel)
 
 
@@ -132,6 +132,7 @@ class BarChartViewer(SquareViewer):
             captions_for_axis: Optional[dict] = None,
             captions_for_values: Optional[dict] = None,
             colors: Optional[dict] = None,
+            percent: bool = False,
     ) -> SquareView:
         bar_chart_view = SquareView.vertical([], size=chart_size, style=style)
         if axis_width is None:
@@ -148,7 +149,8 @@ class BarChartViewer(SquareViewer):
             scale_x.numeric = int(scale_x.numeric)
         for k, v in obj.items():
             row = self._get_bar_row(
-                row_name=k, value=v, bar_style=bar_style, mark_style=mark_style, colors=colors,
+                row_name=k, value=v, bar_style=bar_style, mark_style=mark_style,
+                colors=colors, percent=percent,
                 scale_x=scale_x, axis_width=axis_width, row_frame_size=row_frame_size, mark_size=mark_size,
                 captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
             )
@@ -166,6 +168,7 @@ class BarChartViewer(SquareViewer):
             mark_style: Style,
             bar_style: Style,
             colors: Optional[dict] = None,
+            percent: bool = False,
             captions_for_axis: Optional[dict] = None,
             captions_for_values: Optional[dict] = None,
     ) -> SquareView:
@@ -174,6 +177,8 @@ class BarChartViewer(SquareViewer):
             sum_value = value
         elif isinstance(value, dict):
             sum_value = sum(value.values())
+        elif value is None:
+            return SquareView(data=[], size=Size2d(0, bar_frame_size.y))
         else:
             raise TypeError(value)
         if axis_width:
@@ -201,7 +206,8 @@ class BarChartViewer(SquareViewer):
         elif isinstance(value, dict):
             bar = self._get_multiple_bar(
                 value, scale_x=scale_x, frame_size=bar_frame_size,
-                style=bar_style, colors=colors, captions=captions_for_values, hint=hint,
+                style=bar_style, colors=colors, percent=percent,
+                captions=captions_for_values, hint=hint,
             )
         else:
             raise TypeError(value)
@@ -224,7 +230,7 @@ class BarChartViewer(SquareViewer):
             scale_x: Size1d,
             bar_frame_size: Size2d,
             bar_style: Style,
-            caption: Optional[str] = None,
+            caption: Union[SquareView, str, None] = None,
             hint: Optional[str] = None,
     ) -> SquareView:
         bar_width = scale_x * value
@@ -250,16 +256,24 @@ class BarChartViewer(SquareViewer):
             colors: Optional[dict],
             captions: Optional[dict] = None,
             hint: Optional[str] = None,
+            percent: bool = False,
     ) -> SquareView:
         sub_bars = list()
         for k, v in values.items():
             color = colors.get(k) if colors else None
             if color is None:
                 color = cls._get_default_color_for_category(k)
+            if percent:
+                v_formatted = percentage(v, 0, smart=False, delimiter=HTML_THIN_SPACE)
+            else:
+                v_formatted = v
             cur_style = style.modified(background=color)
             cur_caption = captions.get(k, k) if captions else k
-            cur_caption = f'{v} {cur_caption}'
-            cur_hint = f'{v}{HTML_NEW_LINE}{cur_caption}{HTML_NEW_LINE}{hint}'
+            cur_caption = f'{v_formatted} {cur_caption}'
+            if percent:
+                cur_hint = f'{cur_caption}{HTML_NEW_LINE}{k}: {v}{HTML_NEW_LINE}'
+            else:
+                cur_hint = f'{v}{HTML_NEW_LINE}{cur_caption}{HTML_NEW_LINE}{hint}'
             cur_bar = cls._get_single_bar(
                 value=v,
                 scale_x=scale_x,
@@ -379,13 +393,13 @@ class PairBarChartViewer(BarChartViewer):
         rel_chart_view = self._get_chart_without_padding(
             self._get_rel_obj(obj), scale_x=rel_bar_width,
             chart_size=rel_chart_size, axis_width=None,
-            style=style, bar_style=bar_style, colors=colors,
+            style=style, bar_style=bar_style, colors=colors, percent=True,
             captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
         )
         abs_chart_view = self._get_chart_without_padding(
             obj, scale_x=scale_x,
             chart_size=abs_chart_size, axis_width=axis_width,
-            style=style, bar_style=bar_style, colors=colors,
+            style=style, bar_style=bar_style, colors=colors, percent=False,
             captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
             mark_style=MARK_STYLE.modified(text_align='center'),
         )
@@ -401,13 +415,14 @@ class PairBarChartViewer(BarChartViewer):
     def _get_rel_obj(obj: OrderedDict[str, dict]) -> OrderedDict[str, dict]:
         rel_obj = OrderedDict()
         for bar_name, abs_series in obj.items():
-            rel_series = OrderedDict()
             if isinstance(abs_series, NUMERIC):
-                abs_series = OrderedDict(total=abs_series)
-            assert isinstance(abs_series, dict), TypeError(abs_series)
-            sum_value = sum(abs_series.values())
-            for cat, abs_value in abs_series.items():
-                rel_value = abs_value / sum_value
-                rel_series[cat] = rel_value
-            rel_obj[bar_name] = rel_series
+                rel_obj[bar_name] = None
+            else:
+                assert isinstance(abs_series, dict), TypeError(abs_series)
+                sum_value = sum(abs_series.values())
+                rel_series = OrderedDict()
+                for cat, abs_value in abs_series.items():
+                    rel_value = abs_value / sum_value
+                    rel_series[cat] = round(rel_value, 3)
+                rel_obj[bar_name] = rel_series
         return rel_obj
