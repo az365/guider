@@ -64,6 +64,7 @@ class BarChartViewer(SquareViewer):
             include_title: bool = True,
             size: Optional[Size2d] = None,
             style: Optional[Style] = None,
+            colors: Optional[dict] = None,
             depth: Optional[int] = None,
             prefix: Optional[FormattedView] = None,
             tag: Optional[TagType] = None,
@@ -89,7 +90,7 @@ class BarChartViewer(SquareViewer):
         bar_chart_view = self._get_chart_without_padding(
             obj, scale_x=scale_x,
             chart_size=size - padding * 2, axis_width=axis_width,
-            style=style, bar_style=bar_style,
+            style=style, bar_style=bar_style, colors=colors,
             captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
         )
         if padding.x or padding.y:
@@ -130,6 +131,7 @@ class BarChartViewer(SquareViewer):
             mark_style: Style = MARK_STYLE,
             captions_for_axis: Optional[dict] = None,
             captions_for_values: Optional[dict] = None,
+            colors: Optional[dict] = None,
     ) -> SquareView:
         bar_chart_view = SquareView.vertical([], size=chart_size, style=style)
         if axis_width is None:
@@ -146,7 +148,7 @@ class BarChartViewer(SquareViewer):
             scale_x.numeric = int(scale_x.numeric)
         for k, v in obj.items():
             row = self._get_bar_row(
-                row_name=k, value=v, bar_style=bar_style, mark_style=mark_style,
+                row_name=k, value=v, bar_style=bar_style, mark_style=mark_style, colors=colors,
                 scale_x=scale_x, axis_width=axis_width, row_frame_size=row_frame_size, mark_size=mark_size,
                 captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
             )
@@ -163,9 +165,9 @@ class BarChartViewer(SquareViewer):
             mark_size: Size2d,
             mark_style: Style,
             bar_style: Style,
+            colors: Optional[dict] = None,
             captions_for_axis: Optional[dict] = None,
             captions_for_values: Optional[dict] = None,
-            colors: Optional[dict] = None,
     ) -> SquareView:
         bar_frame_size = Size2d(row_frame_size.x - axis_width, row_frame_size.y)
         if isinstance(value, NUMERIC):
@@ -277,9 +279,14 @@ class BarChartViewer(SquareViewer):
         return multiple_bar
 
     @staticmethod
-    def _get_default_color_for_category(category: str, salt: str = '%%%') -> str:
-        num = crc32(bytes(salt + category, 'utf-8'))
-        return '#' + hex(num)[-6:]
+    def _get_default_color_for_category(category: str, salt: str = '==') -> str:
+        if category == 'total':
+            return DEFAULT_CHART_COLOR
+        elif category == 'other':
+            return DEFAULT_BAR_COLOR
+        else:
+            num = crc32(bytes(salt + category, 'utf-8'))
+            return '#' + hex(num)[-6:]
 
     @classmethod
     def _get_axis_label(
@@ -341,6 +348,7 @@ class PairBarChartViewer(BarChartViewer):
             include_title: bool = True,
             size: Optional[Size2d] = None,
             style: Optional[Style] = None,
+            colors: Optional[dict] = None,
             depth: Optional[int] = None,
             prefix: Optional[FormattedView] = None,
             tag: Optional[TagType] = None,
@@ -371,13 +379,13 @@ class PairBarChartViewer(BarChartViewer):
         rel_chart_view = self._get_chart_without_padding(
             self._get_rel_obj(obj), scale_x=rel_bar_width,
             chart_size=rel_chart_size, axis_width=None,
-            style=style, bar_style=bar_style,
+            style=style, bar_style=bar_style, colors=colors,
             captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
         )
         abs_chart_view = self._get_chart_without_padding(
             obj, scale_x=scale_x,
             chart_size=abs_chart_size, axis_width=axis_width,
-            style=style, bar_style=bar_style,
+            style=style, bar_style=bar_style, colors=colors,
             captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
             mark_style=MARK_STYLE.modified(text_align='center'),
         )
