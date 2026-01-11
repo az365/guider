@@ -80,10 +80,52 @@ class BarChartViewer(SquareViewer):
             scale_x = self.scale_x
         if padding is None:
             padding = self.padding
-        chart_size = size - padding * 2
+        bar_chart_view = self._get_chart_without_padding(
+            obj, scale_x=scale_x,
+            chart_size=size - padding * 2,
+            style=style, bar_style=bar_style,
+            captions_for_axis=captions_for_axis, captions_for_values=captions_for_values,
+        )
+        if padding.x or padding.y:
+            bar_chart_view = self._get_chart_with_padding(bar_chart_view, padding)
+        assert isinstance(bar_chart_view, SquareView)
+        return bar_chart_view
+
+    @staticmethod
+    def _get_chart_with_padding(
+            chart_view: SquareView,
+            padding: Size2d,
+    ) -> SquareView:
+        style = chart_view.style
+        chart_size = chart_view.size
+        size = chart_size + padding * 2
+        padding_y = SquareView([], TagType.Div, size=Size2d(size.x, padding.y))
+        padding_x = SquareView([], TagType.Div, size=Size2d(padding.x, chart_size.y))
+        chart_row_view = SquareView.horizontal(
+            data=[padding_x, chart_view, padding_x],
+            size=Size2d(size.x, chart_size.y),
+        )
+        view = SquareView.vertical(
+            data=[padding_y, chart_row_view, padding_y],
+            size=size,
+            style=style,
+        )
+        assert isinstance(view, SquareView)
+        return view
+
+    def _get_chart_without_padding(
+            self,
+            obj: dict,
+            chart_size: Optional[Size2d] = None,
+            style: Optional[Style] = None,
+            scale_x: Optional[Size1d] = None,
+            bar_style: Style = DEFAULT_BAR_STYLE,
+            captions_for_axis: Optional[dict] = None,
+            captions_for_values: Optional[dict] = None,
+    ) -> SquareView:
         bar_chart_view = SquareView.vertical([], size=chart_size, style=style)
         bars_count = len(obj)
-        row_height = size.y / bars_count
+        row_height = chart_size.y / bars_count
         row_frame_size = Size2d(chart_size.x, row_height)
         bar_frame_size = Size2d(row_frame_size.x - self.axis_width, row_height)
         mark_size = Size2d(self.axis_width, row_height)
@@ -104,19 +146,6 @@ class BarChartViewer(SquareViewer):
                 captions_for_values=captions_for_values,
             )
             bar_chart_view.data.append(row)
-        if padding.x or padding.y:
-            padding_y = SquareView([], TagType.Div, size=Size2d(size.x, padding.y))
-            padding_x = SquareView([], TagType.Div, size=Size2d(padding.x, chart_size.y))
-            chart_row_view = SquareView.horizontal(
-                data=[padding_x, bar_chart_view, padding_x],
-                size=Size2d(size.x, chart_size.y),
-            )
-            bar_chart_view = SquareView.vertical(
-                data=[padding_y, chart_row_view, padding_y],
-                size=size,
-                style=style,
-            )
-        assert isinstance(bar_chart_view, SquareView)
         return bar_chart_view
 
     def _get_bar_row(
@@ -149,7 +178,7 @@ class BarChartViewer(SquareViewer):
             detailed_caption = None
             axis_label = None
         if captions_for_values:
-            hint = f'{row_name}: {sum_value} {captions_for_values.get(row_name)}'
+            hint = f'{row_name}: {sum_value} {captions_for_values.get(row_name) or captions_for_axis.get(row_name, "")}'
         else:
             hint = f'{row_name}: {sum_value}'
         if isinstance(value, NUMERIC):
