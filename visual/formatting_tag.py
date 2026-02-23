@@ -7,7 +7,7 @@ from abstract.common_abstract import CommonAbstract
 from visual.tag_type import TagType
 from visual.style import Style
 
-HTML_ATTR_MAPPING = dict(id='name', title='hint', href='url')
+HTML_ATTR_MAPPING = dict(tech_name='name', title='hint', href='url')
 
 
 class AbstractFormattingTag(CommonAbstract, ABC):

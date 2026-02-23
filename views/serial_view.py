@@ -14,10 +14,10 @@ class IndentDumper(yaml.SafeDumper):
 
 
 class SerialView(AbstractView):
-    def __init__(self, data, depth: Optional[int] = None, use_ids: bool = False, skip_empty: bool = False):
+    def __init__(self, data, depth: Optional[int] = None, use_tech_names: bool = False, skip_empty: bool = False):
         super().__init__(data)
         self.depth = depth
-        self.use_ids = use_ids
+        self.use_tech_names = use_tech_names
         self.skip_empty = skip_empty
 
     def get_serializable_props(self, ordered: bool = True):
@@ -26,7 +26,7 @@ class SerialView(AbstractView):
             data = CommonWrapper.wrap(data)
         return data.get_serializable_props(
             self.depth,
-            use_ids=self.use_ids,
+            use_tech_names=self.use_tech_names,
             skip_empty=self.skip_empty,
             ordered=ordered,
         )

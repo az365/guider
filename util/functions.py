@@ -38,14 +38,16 @@ def remove_redundant_spacing(text: str) -> str:
     return text
 
 
-def get_id(obj):
-    if hasattr(obj, 'id'):
+def get_tech_name(obj):
+    if hasattr(obj, 'tech_name'):
+        return obj.tech_name
+    elif hasattr(obj, 'get_tech_name'):
+        return obj.get_tech_name()
+    elif hasattr(obj, 'id'):
         return obj.id
     elif hasattr(obj, 'get_id'):
         return obj.get_id()
-    elif hasattr(obj, 'short_name'):
-        return obj.short_name
-    elif hasattr(obj, 'get_short_name'):
+    elif hasattr(obj, 'get_name_or_str'):
         return obj.get_name_or_str()
 
 
@@ -78,7 +80,7 @@ def get_repr(obj) -> str:
 def get_array_str(obj: Iterable, scope: bool = False, quote: str = '', delimiter: str = ', ') -> str:
     array = list()
     for i in obj:
-        i_repr = get_id(i)
+        i_repr = get_tech_name(i)
         i_repr = str(i_repr or i)
         if quote:
             i_repr.replace(quote, '\\' + quote)

@@ -8,7 +8,7 @@ from templates.knowledge.link_type import LinkType, get_inverted_link_type
 class LinkedTerm(Term):
     def __init__(
             self,
-            short_name: str,
+            tech_name: str,
             synonymes: Optional[list] = None,
             definition: str = '',
 
@@ -17,7 +17,7 @@ class LinkedTerm(Term):
             container: Terms = None, content: Terms = None,
             uses: Terms = None, usage: Terms = None,
     ):
-        super().__init__(short_name, synonymes=synonymes or list(), definition=definition)
+        super().__init__(tech_name, synonymes=synonymes or list(), definition=definition)
         self._links = OrderedDict()
         self.set_linked_terms(LinkType.Parent, parent)
         self.set_linked_terms(LinkType.Child, child)
@@ -49,7 +49,7 @@ class LinkedTerm(Term):
 
     def add_linked_term(self, link_type: LinkType, term: Term, symmetrically: bool = True):
         if isinstance(term, str):
-            found_term = self.get_term_by_id(term)
+            found_term = self.get_term_by_tech_name(term)
             if not found_term:
                 term = LinkedTerm(term)
         if symmetrically:
@@ -71,7 +71,7 @@ class LinkedTerm(Term):
 
     def get_props(self) -> OrderedDict:
         props = OrderedDict()
-        props['short_name'] = self.short_name
+        props['tech_name'] = self.tech_name
         props['synonymes'] = self.synonymes
         props['definition'] = self.definition
         for k, v in self._links.items():
@@ -85,7 +85,7 @@ class LinkedTerm(Term):
                 ignore_names = set()
             for term in self.get_linked_terms_iterator():
                 if isinstance(term, LinkedTerm):
-                    name = term.short_name
+                    name = term.tech_name
                 else:
                     raise TypeError(f'{term} is {type(term)}, not LinkedTerm')
                 if name not in ignore_names:
@@ -97,19 +97,19 @@ class LinkedTerm(Term):
                 for term in linked_terms:
                     yield term
 
-    def get_term_by_id(self, short_name: str, recursively: bool = False, ignore_names: Optional[set] = None):
+    def get_term_by_tech_name(self, tech_name: str, recursively: bool = False, ignore_names: Optional[set] = None):
         for i in self.get_linked_terms_iterator(recursively=recursively, ignore_names=ignore_names):
-            if i.short_name == short_name:
+            if i.tech_name == tech_name:
                 return i
 
     def get_term_by_name(self, name: str, recursively: bool = False, ignore_names: Optional[set] = None):
         for i in self.get_linked_terms_iterator(recursively=recursively, ignore_names=ignore_names):
-            names = [i.short_name] + i.synonymes
+            names = [i.tech_name] + i.synonymes
             if name in names:
                 return i
 
     def get_repr(self):
-        return self.short_name
+        return self.tech_name
 
     def __repr__(self):
         return self.get_repr()
@@ -118,4 +118,4 @@ class LinkedTerm(Term):
         if self.synonymes:
             return self.synonymes[0]
         else:
-            return self.short_name
+            return self.tech_name

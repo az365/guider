@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from util.const import PATH_DELIMITER
 from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
-from util.functions import get_id, get_array_str, remove_empty_values_from_dict, crop, get_hint, get_repr
+from util.functions import get_tech_name, get_array_str, remove_empty_values_from_dict, get_hint, get_repr
 from abstract.common_abstract import CommonAbstract
 from wrappers.wrapper_interface import WrapperInterface
 from viewers.viewer_interface import ViewerInterface
@@ -20,8 +20,8 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
         self._obj = obj
         self._path = path or []
         self._root = root  # empty root is self
-        if hasattr(obj, 'short_name') and not path:
-            self._path = [obj.short_name]
+        if hasattr(obj, 'tech_name') and not path:
+            self._path = [obj.tech_name]
 
     def get_raw_object(self) -> Any:
         return self._obj
@@ -50,12 +50,12 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
     def is_path_valid(self) -> bool:
         return self == self.get_root().get_node(self.get_path())
 
-    def get_short_name(self) -> str:
+    def get_tech_name(self) -> str:
         obj = self.get_raw_object()
-        obj_id = get_id(obj)
+        tech_name = get_tech_name(obj)
         path = self.get_path()
-        if obj_id:
-            return obj_id
+        if tech_name:
+            return tech_name
         elif path:
             return '.'.join(map(str, path))
         else:
@@ -70,7 +70,7 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
         elif hasattr(obj, 'get_name_or_str'):
             return obj.get_name_or_str()
         else:
-            return self.get_short_name()
+            return self.get_tech_name()
 
     @classmethod
     def wrap(cls, obj: Any, path: Optional[list] = None) -> Native:
@@ -162,7 +162,7 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
     def get_serializable_props(
             self,
             depth: Optional[int] = None,
-            use_ids: bool = False,
+            use_tech_names: bool = False,
             skip_empty: bool = False,
             ordered: bool = True,
     ):
@@ -178,7 +178,7 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
         return self._get_serializable(
             obj,
             depth=depth,
-            use_ids=use_ids,
+            use_tech_names=use_tech_names,
             skip_empty=skip_empty,
             ordered=ordered,
         )
@@ -187,7 +187,7 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
             self,
             obj: Iterable,
             depth: Optional[int] = None,
-            use_ids: bool = False,
+            use_tech_names: bool = False,
             skip_empty: bool = False,
             ordered: bool = True,
     ):
@@ -203,16 +203,16 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
             raise TypeError(f'expected dict or array, got {obj} as {type(obj)}')
 
         for k, v in items:
-            v_id = get_id(v) if use_ids else None
-            if v_id is not None:
-                v_serializable = v_id
+            v_name = get_tech_name(v) if use_tech_names else None
+            if v_name is not None:
+                v_serializable = v_name
             else:
                 if not isinstance(v, CommonWrapper):
                     v = CommonWrapper.wrap(v, path=self.get_path() + [k])
                 v_depth = depth - 1 if depth is not None else None
                 v_serializable = v.get_serializable_props(
                     depth=v_depth,
-                    use_ids=use_ids,
+                    use_tech_names=use_tech_names,
                     skip_empty=skip_empty,
                     ordered=ordered,
                 )
@@ -291,8 +291,8 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
                 return obj[name]
             else:
                 for i in obj:
-                    if hasattr(i, 'short_name'):
-                        if i.short_name == name:
+                    if hasattr(i, 'tech_name'):
+                        if i.tech_name == name:
                             return i
                     wrapped_i = CommonWrapper(i)
                     if hasattr(wrapped_i, 'get_name'):
@@ -350,19 +350,6 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
             prop = self.get_property(path[0], wrapped=True)
             assert isinstance(prop, CommonWrapper)
             return prop.get_node(path[1:], wrapped=wrapped)
-
-    def get_props_str(self, max_len: int = 50) -> str:
-        obj = self.get_raw_object()
-        if isinstance(obj, str):
-            props_list = [obj]
-        elif isinstance(obj, ARRAY_TYPES):
-            props_list = [repr(i) for i in obj]
-        elif not (isinstance(obj, dict) or hasattr(obj, '__dict__')):
-            props_list = [repr(obj)]
-        else:
-            props_list = [f'{k}={v}' for k, v in self.get_props(add=[]).items()]
-        line = ', '.join(props_list)
-        return crop(line, max_len)
 
     def __str__(self):
         cls = self.__class__.__name__

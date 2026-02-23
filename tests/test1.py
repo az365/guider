@@ -27,7 +27,7 @@ class TestCommonWrapper(unittest.TestCase):
     def test_yaml(self):
         d = dict(a=1, b=2)
         line = 'a: 1\nb: 2\n'
-        viewer = SerialViewer(use_ids=True, skip_empty=True)
+        viewer = SerialViewer(use_tech_names=True, skip_empty=True)
         parsed = viewer.parse(line)
         self.assertEqual(d, parsed.get_raw_object())
         yaml_repr = viewer.get_view(parsed).get_yaml()
