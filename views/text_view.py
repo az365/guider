@@ -62,9 +62,7 @@ class TextView(AbstractView):
             if lines_count is not None and no < lines_count:
                 if no + 1 == lines_count and self.get_lines_count() > lines_count:
                     line = crop_suffix
-            if max_line_len is not None:
-                line = crop(line, max_line_len)
-            yield line
+            yield crop(line, max_line_len, crop_suffix=crop_suffix)
 
     def replace(self, __old: str, __new: str, inplace: bool = False) -> Native:
         """

@@ -46,7 +46,6 @@ class SquareViewer(TreeViewer):
         if style is None:
             style = Style()
         elif isinstance(style, Style):
-            # pass
             style = Style(**style._get_init_kwargs())
         elif isinstance(style, dict):
             style = Style(**style)
@@ -136,7 +135,8 @@ class SquareViewer(TreeViewer):
             elif isinstance(obj, FormattedView):
                 content_view = SquareView(obj, tag=None, size=content_size, style=None, hint=None)
             elif isinstance(obj, str):
-                content_view = SquareView(obj, tag=TagType.Paragraph, size=content_size, style=None, hint=get_repr(obj))
+                hint = get_repr(obj, max_len=HINT_LEN)
+                content_view = SquareView(obj, tag=TagType.Paragraph, size=content_size, style=None, hint=hint)
             else:
                 content_view = self._get_items_view(obj, content_size=content_size, vertical=vertical, depth=depth)
         else:

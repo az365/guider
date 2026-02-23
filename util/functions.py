@@ -51,33 +51,45 @@ def get_tech_name(obj):
         return obj.get_name_or_str()
 
 
-def get_hint(obj) -> str:
+def get_hint(obj, max_len: Optional[int] = None) -> str:
     if hasattr(obj, 'get_hint'):  # isinstance(obj, WrapperInterface)
-        return obj.get_hint()
+        hint = obj.get_hint()
     elif isinstance(obj, dict):
         count = len(obj)
         columns = '2+' if isinstance(obj, OrderedDict) else '2'
-        return f'{count}x{columns}'
+        hint = f'{count}x{columns}'
     elif isinstance(obj, Sized) and not isinstance(obj, str):
-        return f'{len(obj)}'
+        hint = f'{len(obj)}'
     else:
-        return obj.__class__.__name__
+        hint = obj.__class__.__name__
+    return crop(hint, max_len)
 
 
-def get_repr(obj) -> str:
+def get_repr(obj, max_len: Optional[int] = None) -> str:
     if isinstance(obj, PRIMITIVES):
-        return repr(obj)
+        repr_str = repr(obj)
     elif hasattr(obj, 'get_repr'):  # isinstance(obj, WrapperInterface):
-        return obj.get_repr()
+        repr_str = obj.get_repr()
     elif hasattr(obj, '__class__') and hasattr(obj, '__dict__'):
         cls = obj.__class__.__name__
-        attr = get_attr_str(obj.__dict__)
-        return f'{cls}({attr})'
+        if max_len is None:
+            max_attr_len = None
+        else:
+            max_attr_len = max_len - len(cls) - 2
+        attr = get_attr_str(obj.__dict__, max_len=max_attr_len)
+        repr_str = f'{cls}({attr})'
     else:
-        return repr(obj)
+        repr_str = repr(obj)
+    return crop(repr_str, max_len)
 
 
-def get_array_str(obj: Iterable, scope: bool = False, quote: str = '', delimiter: str = ', ') -> str:
+def get_array_str(
+        obj: Iterable,
+        scope: bool = False,
+        quote: str = '',
+        delimiter: str = ', ',
+        max_len: Optional[int] = None,
+) -> str:
     array = list()
     for i in obj:
         i_repr = get_tech_name(i)
@@ -90,11 +102,13 @@ def get_array_str(obj: Iterable, scope: bool = False, quote: str = '', delimiter
         array.append(i_repr)
     array_str = delimiter.join(array)
     if scope:
-        return f'[{array_str}]'
-    else:
-        return array_str
+        if max_len is not None:
+            array_str = crop(array_str, max_len - 2)
+        array_str = f'[{array_str}]'
+    return crop(array_str, max_len)
 
-def get_attr_str(obj: dict, quote: str = '', delimiter: str = ', ') -> str:
+
+def get_attr_str(obj: dict, quote: str = '', delimiter: str = ', ', max_len: Optional[int] = None) -> str:
     array = list()
     for k, v in obj.items():
         if quote:
@@ -102,27 +116,32 @@ def get_attr_str(obj: dict, quote: str = '', delimiter: str = ', ') -> str:
             v = f'{quote}{v}{quote}'
         item = f'{k}={v}'
         array.append(item)
-    return get_array_str(array, scope=False, quote='', delimiter=delimiter)
+    return get_array_str(array, scope=False, quote='', delimiter=delimiter, max_len=max_len)
+
 
 def crop(
         text,
-        max_len: int = DEFAULT_LINE_LEN,
+        max_len: Optional[int] = DEFAULT_LINE_LEN,
         crop_suffix: str = '...',
         short_crop_suffix: str = '_',
 ) -> str:
     text = str(text)
-    crop_len = len(crop_suffix)
     if max_len is not None:
-        assert isinstance(max_len, int), TypeError('max_len bust be int or None')
-        text_len = len(text)
-        if text_len > max_len:
-            value_len = max_len - crop_len
-            if value_len > 0:
-                text = text[:value_len] + crop_suffix
-            elif max_len > 1:
-                text = text[:max_len - 1] + short_crop_suffix
+        crop_len = len(crop_suffix)
+        if max_len is not None:
+            assert isinstance(max_len, int), TypeError('max_len bust be int or None')
+            if max_len >= 0:
+                text_len = len(text)
+                if text_len > max_len:
+                    value_len = max_len - crop_len
+                    if value_len > 0:
+                        text = text[:value_len] + crop_suffix
+                    elif max_len > 1:
+                        text = text[:max_len - 1] + short_crop_suffix
+                    else:
+                        text = text[:max_len]
             else:
-                text = text[:max_len]
+                text = ''
     return text
 
 

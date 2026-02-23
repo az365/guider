@@ -1,7 +1,7 @@
 from typing import Optional, Iterable, Union, Any
 from collections import OrderedDict
 
-from util.const import PATH_DELIMITER
+from util.const import PATH_DELIMITER, SHORT_LINE_LEN
 from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
 from util.functions import get_tech_name, get_array_str, remove_empty_values_from_dict, get_hint, get_repr
 from abstract.common_abstract import CommonAbstract
@@ -100,9 +100,9 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
         obj_repr = get_repr(obj)
         return f'({obj_repr})'
 
-    def get_hint(self) -> str:
+    def get_hint(self, max_len: Optional[int] = SHORT_LINE_LEN) -> str:
         obj = self.get_raw_object()
-        hint = get_hint(obj)
+        hint = get_hint(obj, max_len=max_len)
         return f'({hint})'
 
     def get_vars(self, including_protected: bool = False) -> dict:
