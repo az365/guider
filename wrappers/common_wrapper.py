@@ -226,6 +226,18 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
                 serializable_props = cls(serializable_props)
         return serializable_props
 
+    def get_key_value_pairs(self) -> list[tuple]:
+        obj = self.get_raw_object()
+        if isinstance(obj, PRIMITIVES):
+            items = [(type(obj), obj)]
+        elif isinstance(obj, dict):
+            items = obj.items()
+        elif isinstance(obj, Iterable) and not isinstance(obj, str):
+            items = enumerate(obj)
+        else:
+            items = self.get_props().items()
+        return list(items)
+
     def get_methods(self, including_protected: bool = False) -> dict:
         obj = self.get_raw_object()
         methods = dict()

@@ -154,7 +154,7 @@ class SquareViewer(TreeViewer):
         return entire_view
 
     def _get_items_view(self, obj, content_size: Size2d, vertical: bool, depth: int):
-        items = self._get_key_value_pairs_from_obj(obj)
+        items = self._get_wrapped_object(obj).get_key_value_pairs()
         count = len(items)
         if count == 0:
             squared_items = list()
@@ -182,14 +182,3 @@ class SquareViewer(TreeViewer):
                 squared_items.append(i_squared)
         items_hint = crop(get_repr(obj), max_len=HINT_LEN)
         return SquareView(squared_items, tag=TagType.Div, size=content_size, style=None, hint=items_hint)
-
-    def _get_key_value_pairs_from_obj(self, obj) -> list[tuple]:
-        if isinstance(obj, str):
-            items = [FormattedView([obj], TagType.Paragraph)]
-        elif isinstance(obj, dict):
-            items = list(obj.items())
-        elif isinstance(obj, Iterable) and not isinstance(obj, str):
-            items = list(enumerate(obj))
-        else:
-            items = list(self._get_wrapped_object(obj).get_props().items())
-        return items
