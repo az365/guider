@@ -13,6 +13,11 @@ Tag = Union[AbstractFormattingTag, TagType, None]
 
 
 class FormattedView(TextView):
+    """
+    Хранит частично подготовленные для форматированного отображения строки (или подобные им объекты).
+    FormattedView (как и TableView) может отдавать MarkDown, HTML.
+    """
+
     def __init__(self, data: Iterable[Text], tag: Tag = None):
         super().__init__(data=data)
         if isinstance(tag, TagType):

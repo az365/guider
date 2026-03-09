@@ -8,6 +8,13 @@ Native = FormattedView
 
 
 class TableView(FormattedView):
+    """
+    Хранит частично подготовленные для отображения табличные данные:
+    массивы строк таблицы, представленных как массивы ячеек, а также список колонок.
+
+    TableView (как и FormattedView) может отдавать MarkDown, HTML.
+    """
+
     def __init__(self, data: Iterable[Array], columns: Optional[list] = None):
         super().__init__(data=data)
         self.columns = columns
