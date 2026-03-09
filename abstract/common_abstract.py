@@ -1,12 +1,12 @@
 from abc import ABC
-from typing import Any
 
 from util.functions import get_repr
+from interfaces.default_interface import DefaultInterface
 
-Native = Any
+Native = DefaultInterface
 
 
-class CommonAbstract(ABC):
+class CommonAbstract(DefaultInterface, ABC):
     def _get_init_kwargs(self, skip_none: bool = True) -> dict:
         init_kwargs = dict()
         for k, v in vars(self).items():

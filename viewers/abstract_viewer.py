@@ -1,19 +1,15 @@
-from abstract.common_abstract import CommonAbstract
-from viewers.viewer_interface import ViewerInterface
-from wrappers.common_wrapper import CommonWrapper
+from abc import ABC
+
+from interfaces.viewer_interface import ViewerInterface as Viewer
+from abstract.common_abstract import CommonAbstract as Abstract
+from wrappers.common_wrapper import CommonWrapper as Wrapper
 
 
-class AbstractViewer(CommonAbstract, ViewerInterface):
-    def __init__(self):
-        pass
-
-    def get_view(self, obj):
-        pass
-
+class AbstractViewer(Abstract, Viewer, ABC):
     @staticmethod
-    def _get_wrapped_object(obj) -> CommonWrapper:
-        if not isinstance(obj, CommonWrapper):
-            obj = CommonWrapper.wrap(obj)
+    def _get_wrapped_object(obj) -> Wrapper:
+        if not isinstance(obj, Wrapper):
+            obj = Wrapper.wrap(obj)
         return obj
 
     def get_data(self, obj):

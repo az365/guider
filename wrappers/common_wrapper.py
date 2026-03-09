@@ -4,19 +4,20 @@ from collections import OrderedDict
 from util.const import PATH_DELIMITER, SHORT_LINE_LEN
 from util.types import Class, PRIMITIVES, Array, ARRAY_TYPES
 from util.functions import get_tech_name, get_array_str, remove_empty_values_from_dict, get_hint, get_repr
-from abstract.common_abstract import CommonAbstract
-from wrappers.wrapper_interface import WrapperInterface
-from viewers.viewer_interface import ViewerInterface
+from abstract.common_abstract import CommonAbstract as Abstract
+from interfaces.wrapper_interface import WrapperInterface as Interface
+from interfaces.view_interface import ViewInterface as View
+from interfaces.viewer_interface import ViewerInterface as Viewer
 
-Native = Union[CommonAbstract, WrapperInterface]
+Native = Union[Abstract, Interface]
 
 DEFAULT_PROPS = 'class', 'path'
 
 
-class CommonWrapper(CommonAbstract, WrapperInterface):
+class CommonWrapper(Abstract, Interface):
     _default_viewer = None
 
-    def __init__(self, obj, path: Optional[list] = None, root: Optional[WrapperInterface] = None):
+    def __init__(self, obj, path: Optional[list] = None, root: Optional[Native] = None):
         self._obj = obj
         self._path = path or []
         self._root = root  # empty root is self
@@ -82,7 +83,7 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
         return cls.wrap(obj, path=path)
 
     @classmethod
-    def set_default_viewer(cls, viewer: ViewerInterface):
+    def set_default_viewer(cls, viewer: Viewer):
         cls._default_viewer = viewer
 
     def get_data(self):
@@ -373,14 +374,14 @@ class CommonWrapper(CommonAbstract, WrapperInterface):
         raw_other = self._get_raw_object(other)
         return raw_self == raw_other
 
-    def get_view(self, viewer: Optional[ViewerInterface] = None):
+    def get_view(self, viewer: Optional[Viewer] = None) -> View:
         if not viewer:
             viewer = self._default_viewer
         if not viewer:
             raise ValueError('viewer not set')
         return viewer.get_view(self)
 
-    def print(self, viewer: Optional[ViewerInterface] = None):
+    def print(self, viewer: Optional[Viewer] = None):
         if not viewer:
             viewer = self._default_viewer
         if not viewer:
