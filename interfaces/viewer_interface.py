@@ -20,7 +20,7 @@ class ViewerInterface(Default, ABC):
         pass
 
     @abstractmethod
-    def get_data(self, obj):
+    def _get_data_from(self, obj):
         """
         Unwraps wrapped data from object.
         :param obj:

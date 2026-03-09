@@ -7,7 +7,7 @@ from viewers.text_viewer import TextViewer
 
 class OneLineTextViewer(TextViewer):
     def get_view(self, obj) -> TextView:
-        data = self.get_data(obj)
+        data = self._get_data_from(obj)
         line = ''
         if isinstance(data, str):
             line = data

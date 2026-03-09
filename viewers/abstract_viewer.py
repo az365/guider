@@ -12,7 +12,7 @@ class AbstractViewer(Abstract, Viewer, ABC):
             obj = Wrapper.wrap(obj)
         return obj
 
-    def get_data(self, obj):
+    def _get_data_from(self, obj):
         if hasattr(obj, 'get_data'):
             return obj.get_data()
         else:
