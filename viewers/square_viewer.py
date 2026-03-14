@@ -101,7 +101,8 @@ class SquareViewer(TreeViewer):
             size = self.size
         if size.get_lines_count() < 0.9:
             font_scale = size.y.get_for_units(Unit.Ephemeral)
-            tag = TagType.Font.create(size=str(font_scale))
+            style = style.modified(font_size=str(font_scale), vertical_align='middle')
+            tag = TagType.Paragraph
         else:
             tag = None
         return SquareView([one_line], tag=tag, size=size, style=style, hint=one_line)

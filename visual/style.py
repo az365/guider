@@ -19,6 +19,7 @@ class Style(CommonAbstract):
             overflow_y: Optional[str] = None,
             text_overflow: Optional[str] = None,
             text_align: Optional[str] = None,
+            vertical_align: Optional[str] = None,
             white_space: Optional[str] = None,
             scrollbar_width: Optional[str] = None,
             color: Optional[str] = None,
@@ -39,6 +40,7 @@ class Style(CommonAbstract):
         self.overflow_y = overflow_y  # поведение при переполнении: visible, hidden, scroll, auto
         self.text_overflow = text_overflow  # обрезка текста: clip, ellipsis
         self.text_align = text_align  # выравнивание текста: left, right, center, justify
+        self.vertical_align = vertical_align  # выравнивание строк по вертикали: baseline, bottom, middle, top
         self.white_space = white_space  # перенос строки: nowrap, pre, pre-wrap, pre-line, normal
         self.scrollbar_width = scrollbar_width  # полоса прокрутки: auto, thin, none
         self.color = color  # цвет шрифта
