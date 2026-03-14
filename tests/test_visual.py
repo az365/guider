@@ -1,7 +1,7 @@
 import unittest
 
 from examples.stats.data_for_charts import simple_funnel_data
-from visual import Size2d
+from visual import Size2d, Unit
 
 
 class TestChartSize(unittest.TestCase):
@@ -15,6 +15,13 @@ class TestChartSize(unittest.TestCase):
         mark_size = Size2d(axis_width, row_height)
         received = f'{row_frame_size} = {mark_size} + {bar_frame_size}'
         expected = '500x40.0px = 50x40.0px + 450x40.0px'
+        self.assertEqual(expected, received)
+
+    def test_size_round(self):
+        initial_size = Size2d(505, 210, Unit.Pixel)
+        step = Size2d(25, 20, Unit.Pixel)
+        expected = Size2d(500, 200, Unit.Pixel)
+        received = round(initial_size, step)
         self.assertEqual(expected, received)
 
 

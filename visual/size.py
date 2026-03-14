@@ -191,7 +191,7 @@ class Size1d(AbstractSize):
         return Size1d(neg_numeric, unit=self.unit, **self._get_font_kwargs())
 
     def __mul__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, NUMERIC):
             return self.modified(x=self.numeric*other)
         elif isinstance(other, Size1d):
             return Size2d(self.size, other.size, **self._get_font_kwargs())
@@ -199,20 +199,29 @@ class Size1d(AbstractSize):
             raise TypeError(repr(other))
 
     def __truediv__(self, other):
-        assert isinstance(other, (int, float)), TypeError(repr(other))
-        x = self.numeric / other
-        return Size1d(x, unit=self.unit, **self._get_font_kwargs())
+        if isinstance(other, NUMERIC):
+            x = self.numeric / other
+            return Size1d(x, unit=self.unit, **self._get_font_kwargs())
+        elif isinstance(other, Size1d):
+            other_size = other.get_for_units(self.unit)
+            return self.numeric / other_size.numeric
+        else:
+            raise TypeError(repr(other))
 
     def __floordiv__(self, other):
-        assert isinstance(other, (int, float)), TypeError(repr(other))
+        assert isinstance(other, NUMERIC), TypeError(repr(other))
         x = self.numeric // other
         return Size1d(x, unit=self.unit, **self._get_font_kwargs())
 
     def __round__(self, n=None):
         if n is None:
             x = int(self._x)
-        else:
+        elif isinstance(n, int):
             x = round(self._x, n)
+        elif isinstance(n, Size1d):
+            x = n * int(self / n)
+        else:
+            raise TypeError(n)
         return Size1d(x, unit=self.unit, **self._get_font_kwargs())
 
     def __bool__(self):
@@ -421,9 +430,17 @@ class Size2d(AbstractSize):
         if n is None:
             x = int(self._x)
             y = int(self._y)
-        else:
+        elif isinstance(n, int):
             x = round(self._x, n)
             y = round(self._y, n)
+        elif isinstance(n, Size1d):
+            x = n.numeric * int(self._x / n.numeric)
+            y = n.numeric * int(self._y / n.numeric)
+        elif isinstance(n, Size2d):
+            x = n._x * int(self._x / n._x)
+            y = n._y * int(self._y / n._y)
+        else:
+            raise TypeError(n)
         return Size2d(x, y, unit=self.unit, **self._get_font_kwargs())
 
     def __bool__(self):
